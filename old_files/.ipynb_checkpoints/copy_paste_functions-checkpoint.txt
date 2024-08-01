@@ -1,0 +1,45 @@
+# 6 things to change
+def function_XXX(x,y): return XXX
+Fa = function_XXX(x,y)
+name = 'XXX'
+
+
+# 4 things to change
+XXX_k_input = {
+    'f': function_XXX,
+    'save_fig': True,
+    'name': name,
+    'cumulative': True,
+    'difference': True
+}
+
+plot_analytical(function_XXX, name, save_fig=True)
+plot_k_approx(**XXX_k_input)
+
+
+# 4 things to change
+XXX_h_input = {
+    'f': function_XXX,
+    'save_fig': True,
+    'name': name,
+    'cumulative': True,
+    'difference': True
+}
+
+plot_analytical(function_XXX, name)
+plot_h_approx(**XXX_h_input)
+
+
+# 8 things to change
+ek_l2_XXX, ek_linf_XXX, tk_XXX = norm_k_stats(function_XXX)
+eh_l2_XXX, eh_linf_XXX, th_XXX = norm_h_stats(function_XXX)
+
+
+# 4 things to change
+plot_l2_approx(ek_l2_XXX, eh_l2_XXX, log_scale=True, save_fig=True, name=name)
+plot_l2_runtimes(tk_XXX, th_XXX, save_fig=True, name=name)
+
+
+# 4 things to change
+plot_linf_approx(ek_linf_XXX, eh_linf_XXX, log_scale=True, save_fig=True, name=name)
+plot_linf_runtimes(tk_XXX, th_XXX, save_fig=True, name=name)

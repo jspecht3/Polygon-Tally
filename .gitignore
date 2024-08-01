@@ -1,0 +1,6 @@
+# pixi environments
+.pixi
+*.egg-info
+
+# module
+polygon_tally/__pycache__
