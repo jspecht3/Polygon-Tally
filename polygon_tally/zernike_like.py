@@ -7,6 +7,8 @@ class ZernikeParent:
     # initialization
     def __init__(self, n, m):
         """
+        Parameters
+        ----------
         n : Zernike order
         m : Zernike sub-order
         """
@@ -24,6 +26,8 @@ class ZernikeParent:
     def n_checker(self, n):
         """Verfies the n associated with the Zernike order is valid.
 
+        Parameters
+        ----------
         n : Zernike order
         """
         if type(n) is not int:
@@ -32,6 +36,8 @@ class ZernikeParent:
     def m_checker(self, n, m):
         """Verifies the m associated with the Zernike order is valid for the given n.
         
+        Parameters
+        ----------
         n : Zernike order
         m : Zernike sub-order
         """
@@ -43,6 +49,8 @@ class ZernikeParent:
     def n_nm(self, n, m):
         """Calculates the normalization constant for the Zernike order
 
+        Parameters
+        ----------
         n : Zernike order
         m : Zernike sub-order
         """
@@ -54,7 +62,9 @@ class ZernikeParent:
 
     def r_nm(self, rho, n, m):
         """Calculates an intermediate function needed for the Zernike polynomials
-        
+ 
+        Parameters
+        ----------
         rho : radial polar cordinate on the unit disk
         n : Zernike order
         m : Zernike sub-order
@@ -76,7 +86,9 @@ class ZernikeParent:
 
     def zernike_nm(self, rho, phi, n, m):
         """creates the zernike function associated with the respective n and m values
-
+        
+        Parameters
+        ----------
         rho : radial polar coordinate on the unit disk
         phi : angular polar coordinate on the unit disk
         n : Zernike order
@@ -98,13 +110,94 @@ class ZernikeParent:
 
 
 class ZBasis(ZernikeParent):
-    """class for the zernike basis vectors, which exist on the unit disk"""
+    """class for the Zernike basis vectors, which are orthogonal over the unit disk"""
+    # i dont wanna make this rn imma do it later :D
+
+
+class KBasis(ZernikeParent):
+    """class for the Zernike-like K basis vectors, which are orthogonal over a regular polygon with p sides and a radius, center to corner distance, of R0"""
+
+    def __init__(self, n, m, p, R0):
+        """
+        Parameters
+        ----------
+        n : Zernike order
+        m : Zernike sub-order
+        p : number of sides on the regular polygon
+        R0 : radius of the regular polygon
+        """
+        # inheriting from ZernikeBase
+        super().__init__(n, m)
+
+        self.p = p
+        self.R0 = R0
+        self.alpha = np.pi / p # 2 * alpha is the angle spanned by a single sector of the disk/polyon
+        self.side_length = R0 / 2**(1/2) # length of one side of the regular polygon
+
+    def show(self):
+        print("n:", self.n, "\nm:", self.m, "\np", self.p, "\nR0:", self.R0)
+
+    # mapping functions
+    def u_alpha(self, var1, var2 = np.nan):
+        """Generates the intermediate function U_alpha from theta (polygon polar) if a single argument is passed or x,y (polygon cartesian) if two arguments are passed. This function is a piece-wise linear function with slope = 1 except at the each theta where a corner occurs. Immediately before the corner, the value of U_alpha is at a maximum of alpha and, immediately after the corner, the value of U_alpha is at a minimum of -alpha.
+    
+    Parameters
+    ----------
+    var1 :
+        one argument passed - theta : angular polar coordinate on the regular polygon
+        two arguments passed - x : x cartesian coordinate on the regular polygon
+    var2 :
+        one argument passed - nan : not used, only a holder
+        two agrummets passed - y : y cartesian coodinate on the regular polygon
+    """
+        if var2 == np.nan:
+            theta = var1
+            return self.u_alpha_theta(theta)
+        else:
+          x = var1
+          y = var2
+          return self.u_alpha_xy(x,y)
+
+    def u_alpha_theta(self, theta):
+        """Generates the intermediate function U_alpha from theta (polygon polar). This function is a piece-wise linear function with slope = 1 except at the each theta where a corner occurs. Immediately before the corner, the value of U_alpha is at a maximum of alpha and, immediately after the corner, the value of U_alpha is at a minimum of -alpha.
+
+        Parameters
+        ----------
+        theta : angular polar coordinate on the regular polygon
+        """
+        drop = (theta + self.alpha) / (2 * self.alpha)
+        u_alpha = theta - drop.astype(int) * (2 * self.alpha)
+        
+        return u_alpha
+
+
+    def u_alpha_xy(self, x, y):
+        """Generates the intermediate function U_alpha from x,y (polygon cartesian). See the description for u_alpha_phi for more info on U_alpha.
+
+        Parameters
+        ----------
+        x : x cartesian coordinate on the regular polygon
+        y : y cartesian coordinate on the regular polygon
+        """
+        return
+
+    def k_nm(self, x, y):
+        """Maps the Zernike polynomial to be orthogonal on a regular polygon.
+        Parameters
+        ----------
+        x : x cartesian coordinate on the regular polygon
+        y : y cartesian coordiante on the regular polygon
+        """
+        # converting from x,y (polygon cartesian) -> r,theta (polygon polar)
+        r = (x**2 + y**2)**(1/2)
+        theta = np.arctan2(y,x) + (2 * np.pi * (y < 0)) # addition of boolean multiplication is needed to fix mapping done with np.arctan2
+
+        
+
+        print(r,theta, self.n, self.m)
 
 
 
-
-
-# outputs
-z1 = ZernikeParent(0,0)
-print(z1.r_nm(.5,0,0))
-print(z1.zernike_nm(0,0,0,0))
+k1 = KBasis(0,0,4,1)
+k1.show()
+print(k1.u_alpha_theta(np.array([0,0,0])))
