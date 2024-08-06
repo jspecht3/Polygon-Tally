@@ -11,9 +11,11 @@ side_length = R0 / 2**(1/2)
 ### Begin U_alpha and R_alpha
 
 # functions
-u_alpha = lambda phi : phi - ((phi + alpha)/(2*alpha)).astype(int) * 2 * alpha
+#u_alpha = lambda phi : phi - ((phi + alpha)/(2*alpha)).astype(int) * 2 * alpha
+u_alpha = lambda phi : phi - int(((phi + alpha)/(2*alpha))) * 2 * alpha
 new_r_alpha = lambda phi : R0 * cos(alpha) / cos(u_alpha(phi))
 
+"""
 ## Plotting U_alpha and R_alpha
 # variables for plotting
 phi = np.linspace(0,2*pi,1000)
@@ -27,7 +29,7 @@ plt.plot(phi, y_r, label='R')
 plt.legend()
 #plt.title("Plot of U_alpha and R_alpha")
 if SAVE_FIGS: plt.savefig('images/ur_alpha.png', dpi=600)
-
+"""
 
 ### End U_alpha and R_alpha
 
