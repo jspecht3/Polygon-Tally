@@ -1,3 +1,3 @@
-This project uses pixi, which is a project manager that replicates the python environment so you don't have to. Please install pixi and use it to copy the environment I have created.
+HEAVY WIP
 
-:smile:
+This project uses `pixi`, so download that before you try to run run anything if you want my python enviornment.
