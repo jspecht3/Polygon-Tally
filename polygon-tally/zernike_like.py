@@ -232,8 +232,8 @@ class ZernikeParent:
             Zernike sub-order
         """
         # checking
-        self.rho_checker(rho)
-        self.phi_checker(phi)
+        #self.rho_checker(rho)
+        #self.phi_checker(phi)
 
         # value of the Zernike polynomial
         if m >= 0:
@@ -245,7 +245,7 @@ class ZernikeParent:
 class ZBasis(ZernikeParent):
     """Class for the Zernike basis vectors, which are orthogonal
     over the unit disk"""
-    # i dont wanna make this rn imma do it later :D
+    # i dont wanna make this rn imma do it later
 
 
 class KBasis(ZernikeParent):
@@ -365,8 +365,8 @@ class KBasis(ZernikeParent):
         the polygon.
         """
         drop = (theta + self.alpha) / (2 * self.alpha)
-#        u_alpha = theta - drop.astype(int) * (2 * self.alpha) 
-        u_alpha = theta - int(drop) * (2 * self.alpha)
+        u_alpha = theta - drop.astype(int) * (2 * self.alpha) 
+#        u_alpha = theta - int(drop) * (2 * self.alpha)
         
         return u_alpha
 
