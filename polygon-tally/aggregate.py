@@ -2,6 +2,7 @@ from zernike_like import (base_input, ZernikeParent,
                           ZBasis, KBasis)
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy.linalg as la
 
 
 class ApproxParent():
@@ -111,7 +112,7 @@ class KApprox(ApproxParent):
         K = basis.k_nm(self.x, self.y)
         ck = basis.ck
 
-        return ck * K
+        return (ck * K).astype(np.float64)
 
 
     def gen_k_n(self, n, load_type):
@@ -151,21 +152,139 @@ class KApprox(ApproxParent):
         toReturn = 0
 
         for i in range(n + 1):
-            toReturn += self.gen_k_n(n, load_type)
+            toReturn += self.gen_k_n(i, load_type)
 
         return toReturn
 
     def plotter(self, z):
+        """Plots the values of z over the regular polygon.
+
+        Parameters
+        ----------
+        z : np.array
+            value of a function at that given x,y
+        """
         fig, ax = plt.subplots()
         plot = ax.contourf(self.x, self.y, z)
         cbar = fig.colorbar(plot)
-        plt.savefig("testing.png")
+        #plt.savefig("testing.png")
         plt.show()
 
+    def plotter_k_each(self, n, load_type):
+        """Plots the value of each K function until the desired
+        degree is reached.
+
+        n : int
+            Zernike order
+        load_type : {"ana", "num"}, str
+            chooses the integration scheme the precalculated
+            ck_nm will be chosen from
+        """
+        Fa = base_input(self.x, self.y)
+        self.plotter(Fa)
+        
+        Fk = 0
+        for i in range(n+1):
+            Fk += self.gen_k_n(i, load_type)
+            print("n:", i)
+            self.plotter(Fk)
+
+    def err_l2_calc(self, n, load_type):
+        """Calculates the relative L2 error of the difference
+        between the analytical function and the K
+        approximation. Each subsequent error calculation uses
+        the combined sum of all previous K_n approximations.
+            
+        Parameters
+        ----------
+        n : int
+            Zernike Order
+        load_type : {"ana", "num"}, str
+            chooses the integration scheme the precalculated
+            ck_nm will be chosen from
+        
+        Notes
+        -----
+        The error calculations are done using relative error
+        between the difference of the analytical function and
+        the approximation using the various K's as basis
+        vectors.
+
+        Inside the calculations, `Fa` is the value of the
+        analytical function at the specified x,y, whereas `Fk`
+        is the value of the current approximation using K of
+        the relevant order as the basis vectors.
+        """
+        Fa = base_input(self.x, self.y)
+        
+        l2_errs = []
+        Fk = 0
+
+        for i in range(n+1):
+            print("n:", i)
+
+            Fk += self.gen_k_n(i, load_type)
+            Dk = Fa - Fk
+
+            l2_err = la.norm(Dk, 2) / la.norm(Fk, 2)
+            l2_errs.append(l2_err)
+
+        return l2_errs
 
 
+    def err_linf_calc(self, n, load_type):
+        """Calculates the relative Linf error of the difference
+        between the analytical function and the K
+        approximation. Each subsequent error calculation uses
+        the combined sum of all previous K_n approximations.
+            
+        Parameters
+        ----------
+        n : int
+            Zernike Order
+        load_type : {"ana", "num"}, str
+            chooses the integration scheme the precalculated
+            ck_nm will be chosen from
+
+        Notes
+        -----
+        The error calculations are done using relative error
+        between the difference of the analytical function and
+        the approximation using the various K's as basis
+        vectors.
+
+        Inside the calculations, `Fa` is the value of the
+        analytical function at the specified x,y, whereas `Fk`
+        is the value of the current approximation using K of
+        the relevant order as the basis vectors.
+        """
+        Fa = base_input(self.x, self.y)
+
+        linf_errs = []
+        Fk = 0 
+
+        for i in range(n+1):
+            print("n:", i)
+
+            Fk += self.gen_k_n(i, load_type)
+            Dk = Fa - Fk
+
+            linf_err = la.norm(Dk, np.inf) / la.norm(Fk, np.inf)
+            linf_errs.append(linf_err)
+
+        return linf_errs
 
 
+    def kit_and_caboodle(self, n):
+        """This function is what I ran to generate all the
+        pictures and errors at once. It is an amalgamation of
+        most of the above functions, but is created like this,
+        so it is easy to run when cloned.
+        
+        Parameters
+        ----------
+        n : int
+            Zernike order
+        """
 
-a = KApprox(4, 100, 1000)
-z1 = a.gen_k_n(5,"ana")
+
