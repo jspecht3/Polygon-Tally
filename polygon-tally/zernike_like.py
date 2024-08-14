@@ -50,7 +50,7 @@ def parse_ck_csv():
     ana_ck_dict = {}
     num_ck_dict = {}
 
-    for n in range(36):
+    for n in range(60):
         ana_ck_m_dict = {}
         num_ck_m_dict = {}
 
@@ -62,7 +62,7 @@ def parse_ck_csv():
         num_ck_dict[n] = num_ck_m_dict
 
     # filling the dictionaries with the right values
-    for i in range(len(ck_n) - 10):
+    for i in range(len(ck_n)):
         n = int(ck_n[i])
         m = int(ck_m[i])
 
