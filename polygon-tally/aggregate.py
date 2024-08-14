@@ -1,8 +1,11 @@
 from zernike_like import (base_input, ZernikeParent,
-                          ZBasis, KBasis)
+                          ZBasis, KBasis,
+                          ana_cks, num_cks)
+import csv
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.linalg as la
+import time
 
 
 class ApproxParent():
@@ -111,6 +114,7 @@ class KApprox(ApproxParent):
 
         K = basis.k_nm(self.x, self.y)
         ck = basis.ck
+        print(ck)
 
         return (ck * K).astype(np.float64)
 
@@ -156,18 +160,24 @@ class KApprox(ApproxParent):
 
         return toReturn
 
-    def plotter(self, z):
+    def plotter(self, z, name = '', title = ''):
         """Plots the values of z over the regular polygon.
 
         Parameters
         ----------
         z : np.array
             value of a function at that given x,y
+        name : str
+            file name of the picture you want to save
         """
         fig, ax = plt.subplots()
         plot = ax.contourf(self.x, self.y, z)
         cbar = fig.colorbar(plot)
-        #plt.savefig("testing.png")
+        plot.set_clim(-10,6)
+
+        if name != '' :
+            plt.title(title)
+            plt.savefig("output/images/"+name, dpi = 600)
         plt.show()
 
     def plotter_k_each(self, n, load_type):
@@ -226,7 +236,7 @@ class KApprox(ApproxParent):
             Fk += self.gen_k_n(i, load_type)
             Dk = Fa - Fk
 
-            l2_err = la.norm(Dk, 2) / la.norm(Fk, 2)
+            l2_err = la.norm(Dk, 2) / la.norm(Fa, 2)
             l2_errs.append(l2_err)
 
         return l2_errs
@@ -269,7 +279,7 @@ class KApprox(ApproxParent):
             Fk += self.gen_k_n(i, load_type)
             Dk = Fa - Fk
 
-            linf_err = la.norm(Dk, np.inf) / la.norm(Fk, np.inf)
+            linf_err = la.norm(Dk, np.inf) / la.norm(Fa, np.inf)
             linf_errs.append(linf_err)
 
         return linf_errs
@@ -285,6 +295,88 @@ class KApprox(ApproxParent):
         ----------
         n : int
             Zernike order
+        
+        Notes
+        -----
+        This function...
+            - plots the analytical input
+            - plots the K approximation using scipy's ck's
+            - plots the K approximation using my ck's
+            - gets the l2 error of both K approximations
+            - gets the linf error of both K approximation
         """
+        
+        # initializing
+        Fa = base_input(self.x, self.y)
+        Fa_l2_norm = la.norm(Fa, 2)
+        Fa_linf_norm = la.norm(Fa, np.inf)
+
+        Fk_sci = 0
+        Fk_my = 0
 
 
+        # plotting the analytical input
+        print("Plotting the function analytically.")
+        self.plotter(Fa, "ana.png", "Analytical")
+
+        print("Starting the Calculations...")
+        for i in range(n+1):
+            t0 = time.time()
+            print("----- n = {} -----".format(i))
+
+
+            # getting each K for the respective order
+            print("calculating approximations")
+    
+            Fk_sci += self.gen_k_n(i, "ana")
+            Fk_my += self.gen_k_n(i, "num")
+
+            tf = time.time()
+            print(tf - t0)
+
+
+            # plotting the approximations
+            print("plotting approximations")
+
+            self.plotter(Fk_sci, "k_sci/k_sci{}.png".format(i))
+            self.plotter(Fk_my, "k_my/k_my{}.png".format(i))
+
+            tf = time.time()
+            print(tf - t0)
+
+
+            # calculating errors
+            print("calculating errors")
+
+            Dk_sci = Fa - Fk_sci
+            Dk_my = Fa - Fk_my
+
+            # l2 errors
+            l2_err_sci = la.norm(Dk_sci, 2) / Fa_l2_norm
+            l2_err_my = la.norm(Dk_my, 2) / Fa_l2_norm
+
+            # linf errors
+            linf_err_sci = (la.norm(Dk_sci, np.inf)
+                            / Fa_linf_norm)    
+            linf_err_my = (la.norm(Dk_my, np.inf)
+                           / Fa_linf_norm)
+                
+            # writing to output files
+            f = open("output/errors/l2_sci.txt", 'a')
+            f.write(str(l2_err_sci) + '\n')
+            f.close
+
+            f = open("output/errors/l2_my.txt", 'a')
+            f.write(str(l2_err_my) + '\n')
+            f.close
+
+            f = open("output/errors/linf_sci.txt", 'a')
+            f.write(str(linf_err_sci) + '\n')
+            f.close
+
+            f = open("output/errors/linf_my.txt", 'a')
+            f.write(str(linf_err_my) + '\n')
+            f.close
+
+            tf = time.time()
+            print(tf - t0)
