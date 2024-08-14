@@ -177,8 +177,8 @@ class KApprox(ApproxParent):
         if name != '' :
             plt.title(title)
             plt.savefig("output/images/"+name, dpi = 600)
-        plt.clf()
-
+        #plt.clf()
+        plt.close('all')
 
     def plotter_k_each(self, n, load_type):
         """Plots the value of each K function until the desired
