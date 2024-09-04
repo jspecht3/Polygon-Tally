@@ -38,7 +38,11 @@ def parse_ck_csv():
     ana_ck = []
 
     # filling the lists
-    with open('data/ck_num_vs_ana.txt', 'r') as file:
+    current_path = __file__
+    split = current_path.split("zernike_like.py")[0]
+    data_path = split + "data/ck_num_vs_ana.txt"
+
+    with open(data_path, 'r') as file:
         reader = csv.reader(file)
         for row in reader:
             ck_n.append(row[0])

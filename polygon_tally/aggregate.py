@@ -1,4 +1,5 @@
-from zernike_like import (base_input, ZernikeParent,
+from . import zernike_like
+from .zernike_like import (base_input, ZernikeParent,
                           ZBasis, KBasis,
                           ana_cks, num_cks)
 import csv
