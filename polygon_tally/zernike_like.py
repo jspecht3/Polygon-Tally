@@ -244,67 +244,6 @@ class ZernikeParent:
             return self.n_nm(n, m) * self.r_nm(rho, n, m) * np.cos(m * phi)
         else:
             return -1 * self.n_nm(n, m) * self.r_nm(rho, n, m) * np.sin(m * phi)
-    
-
-class ZBasis(ZernikeParent):
-    """Class for the Zernike basis vectors, which are orthogonal
-    over the unit disk"""
-    # i dont wanna make this rn imma do it later
-
-
-class KBasis(ZernikeParent):
-    """Class for the Zernike-like K basis vectors, which are
-    orthogonal over a regular polygon with p sides and a
-    radius, center to corner distance, of R0"""
-
-    def __init__(self, n, m, num_sides, polygon_radius):
-        """
-        Parameters
-        ----------
-        n : int
-            Zernike order
-        m : int
-            Zernike sub-order
-        num_sides : int
-            number of sides on the regular polygon
-        polygon_radius : float
-            radius of the regular polygon
-        
-        Notes
-        -----
-        alpha : float
-            half the angle spanned by a single sector of the
-            disk/polygon. As there are the same number of sides
-            as there are sectors and alpha spans half a sector,
-            2*alpha can be found by dividing 2*pi by num_sides.
-        side_length : float
-            side length of a side of the regular polygon 
-        ck : float
-            the factorization contant used in the decomposition
-            of a function into a series of KBasis vectors
-        ck_type : str
-            ck can be calculated in a few ways, so this shows
-            the current way it was calculated
-        """
-        # inheriting from ZernikeBase
-        super().__init__(n, m)
-
-        self.num_sides = num_sides
-        self.polygon_radius = polygon_radius
-        self.alpha = np.pi / num_sides
-        self.side_length = polygon_radius / 2**(1/2)
-        self.ck = None
-        self.ck_type = None
-        self.mesh_size = None
-
-    def show(self):
-        print("n:", self.n)
-        print("m:", self.m)
-        print("Number of Sides:", self.num_sides)
-        print("Polygon Radius:", self.polygon_radius)
-        print("ck value:", self.ck)
-        print("ck Calculation Method:", self.ck_type)
-        print("Mesh Size:", self.mesh_size)
 
 
     # start of coordinate transforms
@@ -551,7 +490,7 @@ class KBasis(ZernikeParent):
         self._gen_polar_diffs_polygon()
 
     def _gen_all_cd(self, mesh_size):
-        "Generates all coordinates and differentials"""
+        """Generates all coordinates and differentials"""
         self._gen_all_coords(mesh_size)
         self._gen_all_diffs(mesh_size)
 
@@ -591,6 +530,150 @@ class KBasis(ZernikeParent):
         else:
             print("Diffs Poly :    UNDEFINED")
     # end of coordinate generators
+
+
+class ZBasis(ZernikeParent):
+    """Class for the Zernike basis vectors, which are
+    orthogonal over a disk of radius R0. The functions in
+    this approximation are 0 outside of the """
+    
+    def __init__(self, n, m, num_sides, polygon_radius):
+        """
+        Parameters
+        ----------
+        n : int
+            Zernike order
+        m : int
+            Zernike sub-order
+        num_sides : int
+            number of sides on the regular polygon
+        polygon_radius : float
+            radius of the regular polygon, the radius of
+            tangency the disk has with the corners of the 
+            polygon
+        
+        Notes
+        -----
+        alpha : float
+            half the angle spanned by a single sector of the
+            disk/polygon. As there are the same number of sides
+            as there are sectors and alpha spans half a sector,
+            2*alpha can be found by dividing 2*pi by num_sides.
+        ck : float
+            the factorization contant used in the decomposition
+            of a function into a series of KBasis vectors
+        ck_type : str
+            ck can be calculated in a few ways, so this shows
+            the current way it was calculated
+        """
+        # inheriting from ZernikeBase
+        super().__init__(n, m)
+
+        self.num_sides = num_sides
+        self.polygon_radius = polygon_radius
+        self.alpha = np.pi / num_sides
+        self.cz = None
+        self.cz_type = None
+        self.mesh_size = None
+
+
+    def z_nm(self, x, y):
+        r, theta = self.cart_to_polar(x, y)
+
+        rho = r / self.polygon_radius
+        phi = theta
+
+        z_nm_value = self.zernike_nm(rho, phi, self.n, self.m)
+
+        return z_nm_value
+
+
+    def num_cz_nm(self, mesh_size, function = base_input):
+        """Numerically calculates the coefficient, cz, for the
+        respective z_nm usinga simple, centered, Riemann
+        numericanl integration scheme.
+
+        Parameters
+        ----------
+        mesh_size : int
+            size of the mesh used for the numerical integration
+        function : func(x,y)
+            function to be approximated by decomposition into a
+            sum of cz's times the z_nm's.
+            function = Sigma_(n=0)^(n=infty) [cz_nm * z_nm]
+        
+        Notes
+        -----
+        The measure, dmu, by which the z_nm's are orthonormal
+        is the same as that for the k_nm's as the area we are
+        investigating is the same in both scenarios. This can
+        be verified using z_00 and k_00 and an input function
+        that is constant. The value of cz will equal the value
+        of the constant of the function.
+
+        ex: function = (lambda x,y : 1) corresponds to cz = 1
+        """
+        dmu = self._rho * self._drho * self._dphi / np.pi
+        cz = np.sum(dmu * function(self._x, self._y) * self.z_nm(self._x, self._y))
+
+        self.cz = cz
+        self.cz_type = "Numerical Integration w/ Riemann Sum"
+
+        return ck
+
+class KBasis(ZernikeParent):
+    """Class for the Zernike-like K basis vectors, which are
+    orthogonal over a regular polygon with p sides and a
+    radius, center to corner distance, of R0"""
+
+    def __init__(self, n, m, num_sides, polygon_radius):
+        """
+        Parameters
+        ----------
+        n : int
+            Zernike order
+        m : int
+            Zernike sub-order
+        num_sides : int
+            number of sides on the regular polygon
+        polygon_radius : float
+            radius of the regular polygon
+        
+        Notes
+        -----
+        alpha : float
+            half the angle spanned by a single sector of the
+            disk/polygon. As there are the same number of sides
+            as there are sectors and alpha spans half a sector,
+            2*alpha can be found by dividing 2*pi by num_sides.
+        side_length : float
+            side length of a side of the regular polygon 
+        ck : float
+            the factorization contant used in the decomposition
+            of a function into a series of KBasis vectors
+        ck_type : str
+            ck can be calculated in a few ways, so this shows
+            the current way it was calculated
+        """
+        # inheriting from ZernikeBase
+        super().__init__(n, m)
+
+        self.num_sides = num_sides
+        self.polygon_radius = polygon_radius
+        self.alpha = np.pi / num_sides
+        self.side_length = polygon_radius / 2**(1/2)
+        self.ck = None
+        self.ck_type = None
+        self.mesh_size = None
+
+    def show(self):
+        print("n:", self.n)
+        print("m:", self.m)
+        print("Number of Sides:", self.num_sides)
+        print("Polygon Radius:", self.polygon_radius)
+        print("ck value:", self.ck)
+        print("ck Calculation Method:", self.ck_type)
+        print("Mesh Size:", self.mesh_size)
 
 
     # start of basis vectors
