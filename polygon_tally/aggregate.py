@@ -1,4 +1,5 @@
-from zernike_like import (base_input, ZernikeParent,
+from . import zernike_like
+from .zernike_like import (base_input, ZernikeParent,
                           ZBasis, KBasis,
                           ana_cks, num_cks)
 import csv
@@ -360,7 +361,7 @@ class KApprox(ApproxParent):
                             / Fa_linf_norm)    
             linf_err_my = (la.norm(Dk_my, np.inf)
                            / Fa_linf_norm)
-                
+            ''' 
             # writing to output files
             f = open("output/errors/l2_sci.txt", 'a')
             f.write(str(l2_err_sci) + '\n')
@@ -377,6 +378,7 @@ class KApprox(ApproxParent):
             f = open("output/errors/linf_my.txt", 'a')
             f.write(str(linf_err_my) + '\n')
             f.close
+            '''
 
             tf = time.time()
             print(tf - t0)
