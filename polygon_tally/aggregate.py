@@ -7,17 +7,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import numpy.linalg as la
 import time
-
+import os
 
 class ApproxParent():
     """Parent Class for the ZApprox, KApprox, and HApprox
     classes"""
-
-    def __init__(self):
-        return
-
-
-class KApprox(ApproxParent):
 
     def __init__(self, num_sides, polygon_radius, mesh_size):
         """
@@ -31,73 +25,67 @@ class KApprox(ApproxParent):
             the number of elements used in the array used to
             generate the value of each basis vector
         """
-        # inheriting from ApproxParent
-        super().__init__()
-
         # simple initializers
         self.num_sides = num_sides
         self.polygon_radius = polygon_radius
         self.mesh_size = mesh_size
-
-        # coordinate initializers
-        self.k00 = KBasis(0, 0, self.num_sides, self.polygon_radius)
-        self.gen_coordinates(self.mesh_size)
-
-
-    def gen_coordinates(self, mesh_size):
-        """Generates the various coordinates needed for
-        subsequent calculations.
-        """
-
-        def _gen_rhophi(mesh_size):
-            """Generates the polar coordinates on the unit disk
-            """
-
-            rho = np.linspace(0, 1, mesh_size)
-            phi = np.linspace(0, 2 * np.pi, mesh_size)
-            
-            rho, phi = np.meshgrid(rho, phi)
-
-            self.rho = rho
-            self.phi = phi
-            
-            return
-
-        def _gen_rtheta(mesh_size):
-            """Generates the polar coordinates on the regular
-            polygon.
-            """
-            theta = self.phi
-
-            variable_radius = self.k00.variable_radius_theta(theta)
-            r = variable_radius * self.rho
-
-            self.theta = theta
-            self.r = r
-
-            return
-
-        def _gen_xy(mesh_size):
-            """Generate the cartesian coordinates on the
-            regular polygon.
-            """
-            x = self.r * np.cos(self.theta)
-            y = self.r * np.sin(self.theta)
-
-            self.x = x
-            self.y = y
-
-            return
- 
-        _gen_rhophi(mesh_size)
-        _gen_rtheta(mesh_size)
-        _gen_xy(mesh_size)
-
         return
 
+    def plotter(self, z, bounds = [], title = '', name = ''):
+        """Plots the values of z over the regular polygon.
 
-    def gen_k_nm(self, n, m, load_type):
-        """Generates the values of a K basis vector given a
+        Parameters
+        ----------
+        z : np.array
+            value of a function at that given x,y
+        title : str
+            figure title
+        name : str
+            file name of the picture you want to save
+        """
+        fig, ax = plt.subplots()
+        plot = ax.contourf(self.x, self.y, z)
+        cbar = fig.colorbar(plot)
+        
+        if bounds != []:
+            plot.set_clim(bounds)
+       
+        graph_lim = 1.1 * self.polygon_radius
+        ax.set_xlim(-graph_lim, graph_lim)
+        ax.set_ylim(-graph_lim, graph_lim)
+        ax.set_title(title)
+        
+        if name != '' :
+            plt.savefig(name, dpi = 600)
+        plt.close('all')
+
+
+class ZApprox(ApproxParent):
+
+    def __init__(self, num_sides, polygon_radius, mesh_size):
+        """
+        Parameters
+        ----------
+        num_sides : int
+            number of sides on the regular polygon
+        polygon_radius : float
+            radius of the polygon
+        mesh_size : int
+            the number of elements used in the array used to
+            generate the value of each basis vector
+        """
+        # inheriting from ApproxParent
+        super().__init__(num_sides, polygon_radius, mesh_size)
+
+        # coordinate initializers
+        self.z00 = ZBasis(0, 0, self.num_sides, self.polygon_radius)
+        self.z00._gen_all_coords(mesh_size)
+        self.rho, self.phi = self.z00._rho, self.z00._phi
+        self.x, self.y = self.z00._x, self.z00._y
+        return
+
+    def gen_z_nm(self, n, m, cz_method, cz_type, function = base_input):
+        """Generates the values of a Z basis vector given a
         specific n and m value.
 
         Parameters
@@ -106,20 +94,209 @@ class KApprox(ApproxParent):
             Zernike order
         m : int
             Zernike sub-order
-        load_type : {"ana", "num"}, str
-            chooses the integration scheme the precalculated
-            ck_nm will be chosen from
+        cz_method : {"calc", "load"}, str
+            chooses to either calculate or load the zk
+        cz_type : {"num", "ana"}, str
+            chooses the calculation scheme for the zk
+        function : func(x,y)
+            the function to be expanded with the ZBasis
+        """
+        basis = ZBasis(n, m, self.num_sides, self.polygon_radius)
+        basis._gen_all_cd(self.mesh_size)
+
+        # add support for other methods here
+        if (cz_method == "calc") and (cz_type == "num"):
+            cz = basis.num_cz_nm(self.mesh_size)
+        else:
+            raise ValueError("Support isn't here for that rn")
+        
+        return (cz * basis.z_nm(self.x, self.y))
+    
+    def gen_z_n(self, n, cz_method, cz_type, function = base_input):
+        """Generates the summed values of all Z basis vectors
+        given a specific n value.
+
+        Parameters
+        ----------
+        n : int
+            Zernike order
+        cz_method : {"calc", "load"}, str
+            chooses to either calculate or load the cz
+        cz_type : {"num", "ana"}, str
+            chooses the calculation scheme for the cz
+        function : func(x,y)
+            the function to be expanded with the ZBasis
+        """
+        toReturn = 0
+
+        for m in np.arange(-n, n+1, 2):
+            toReturn += self.gen_z_nm(n, m, cz_method, cz_type, function)
+        return toReturn
+
+    def gen_z_total(self, n, cz_method, cz_type, function = base_input):
+        """Generates the approximation of the inputted function
+        using the Zernike polynomials as the basis vectors
+
+        Parameters
+        ----------
+        n : int
+            Zernike order
+        cz_method : {"calc", "load"}, str
+            chooses to either calculate or load the cz
+        cz_type : {"num", "ana"}, str
+            chooses the calculation scheme for the cz
+        function : func(x,y)
+            the function to be expanded with the ZBasis
+        """
+        toReturn = 0
+
+        for i in range(n + 1):
+            toReturn += self.gen_z_n(i, cz_method, cz_type, function)
+        return toReturn
+
+    def err_l2_calc(self, n, cz_method, cz_type, function = base_input):
+        """Calculates the relative L2 error of the difference
+        between the analytical function and the Z
+        approximation. Each subsequent error calculation uses
+        the combined sum of all previous Z_n approximations.
+            
+        Parameters
+        ----------
+        n : int
+            Zernike Order
+        cz_method : {"calc", "load"}, str
+            chooses to either calculate or load the cz
+        cz_type : {"num", "ana"}, str
+            chooses the calculation scheme for the cz
+        function : func(x,y)
+            the function to be expanded with the ZBasis
+        
+        Notes
+        -----
+        The error calculations are done using relative error
+        between the difference of the analytical function and
+        the approximation using the various Z's as basis
+        vectors.
+
+        Inside the calculations, `Fa` is the value of the
+        analytical function at the specified x,y, whereas `Fz`
+        is the value of the current approximation using K of
+        the relevant order as the basis vectors.
+        """
+        Fa = base_input(self.x, self.y)
+        
+        l2_errs = []
+        Fz = 0
+
+        for i in range(n+1):
+            print("n:", i)
+
+            Fz += self.gen_z_n(i, cz_method, cz_type, function)
+            Dz = Fa - Fz
+
+            l2_err = la.norm(Dz, 2) / la.norm(Fa, 2)
+            l2_errs.append(l2_err)
+
+        return l2_errs
+
+    def err_linf_calc(self, n, cz_method, cz_type, function = base_input):
+        """Calculates the relative Linf error of the difference
+        between the analytical function and the Z
+        approximation. Each subsequent error calculation uses
+        the combined sum of all previous Z_n approximations.
+            
+        Parameters
+        ----------
+        n : int
+            Zernike Order
+        cz_method : {"calc", "load"}, str
+            chooses to either calculate or load the zk
+        cz_type : {"num", "ana"}, str
+            chooses the calculation scheme for the zk
+        function : func(x,y)
+            the function to be expanded with the ZBasis
+
+        Notes
+        -----
+        The error calculations are done using relative error
+        between the difference of the analytical function and
+        the approximation using the various Z's as basis
+        vectors.
+
+        Inside the calculations, `Fa` is the value of the
+        analytical function at the specified x,y, whereas `Fz`
+        is the value of the current approximation using Z of
+        the relevant order as the basis vectors.
+        """
+        Fa = base_input(self.x, self.y)
+
+        linf_errs = []
+        Fz = 0
+
+        for i in range(n+1):
+            print("n:", i)
+
+            Fz += self.gen_z_n(i, cz_method, cz_type, function)
+            Dz = Fa - Fz
+
+            linf_err = la.norm(Dz, np.inf) / la.norm(Fa, np.inf)
+            linf_errs.append(linf_err)
+
+        return linf_errs
+
+class KApprox(ApproxParent):
+
+    def __init__(self, num_sides, polygon_radius, mesh_size):
+        """
+        Parameters
+        ----------
+        num_sides : int
+            number of sides on the regular polygon
+        polygon_radius : float
+            radius of the polygon
+        mesh_size : int
+            the number of elements used in the array used to
+            generate the value of each basis vector
+        """
+        # inheriting from ApproxParent
+        super().__init__(num_sides, polygon_radius, mesh_size)
+
+        # coordinate initializers
+        self.k00 = KBasis(0, 0, self.num_sides, self.polygon_radius)
+        self.k00._gen_all_coords(mesh_size)
+        self.rho, self.phi = self.k00._rho, self.k00._phi
+        self.x, self.y = self.k00._x, self.k00._y
+        return
+
+    def gen_k_nm(self, n, m, ck_method, ck_type, function = base_input):
+        """Generates the values of a Z basis vector given a
+        specific n and m value.
+
+        Parameters
+        ----------
+        n : int
+            Zernike order
+        m : int
+            Zernike sub-order
+        ck_method : {"calc", "load"}, str
+            chooses to either calculate or load the ck
+        ck_type : {"num", "ana"}, str
+            chooses the calculation scheme for the ck
+        function : func(x,y)
+            the function to be expanded with the ZBasis
         """
         basis = KBasis(n, m, self.num_sides, self.polygon_radius)
-        basis.load_ck_nm(load_type)
+        basis._gen_all_cd(self.mesh_size)
 
-        K = basis.k_nm(self.x, self.y)
-        ck = basis.ck
+        # add support for other methods here
+        if (ck_method == "calc") and (ck_type == "num"):
+            ck = basis.num_ck_nm(self.mesh_size, function)
+        else:
+            raise ValueError("Support isn't here for that rn")
+        
+        return (ck * basis.k_nm(self.x, self.y))
 
-        return (ck * K).astype(np.float64)
-
-
-    def gen_k_n(self, n, load_type):
+    def gen_k_n(self, n, ck_method, ck_type, function = base_input):
         """Generates the summed values of all K basis vectors
         given a specific n value.
 
@@ -127,20 +304,20 @@ class KApprox(ApproxParent):
         ----------
         n : int
             Zernike order
-        load_type : {"ana", "num"}, str
-            chooses the integration scheme the precalculated
-            ck_nm will be chosen from
+        ck_method : {"calc", "load"}, str
+            chooses to either calculate or load the ck
+        ck_type : {"num", "ana"}, str
+            chooses the calculation scheme for the ck
+        function : func(x,y)
+            the function to be expanded with the ZBasis
         """
-
         toReturn = 0
 
         for m in np.arange(-n, n+1, 2):
-            toReturn += self.gen_k_nm(n, m, load_type)
-
+            toReturn += self.gen_k_nm(n, m, ck_method, ck_type, function)
         return toReturn
 
-
-    def gen_k_total(self, n, load_type):
+    def gen_k_total(self, n, ck_method, ck_type, function = base_input):
         """Generates the approximation of the inputted function
         using the transformed Zernike polynomials, K, as the
         basis vectors
@@ -149,58 +326,20 @@ class KApprox(ApproxParent):
         ----------
         n : int
             Zernike order
-        load_type : {"ana", "num"}, str
-            chooses the integration scheme the precalculated
-            ck_nm will be chosen from
+        ck_method : {"calc", "load"}, str
+            chooses to either calculate or load the ck
+        ck_type : {"num", "ana"}, str
+            chooses the calculation scheme for the ck
+        function : func(x,y)
+            the function to be expanded with the ZBasis
         """
         toReturn = 0
 
         for i in range(n + 1):
-            toReturn += self.gen_k_n(i, load_type)
-
+            toReturn += self.gen_k_n(i, ck_method, ck_type, function)
         return toReturn
 
-    def plotter(self, z, name = '', title = ''):
-        """Plots the values of z over the regular polygon.
-
-        Parameters
-        ----------
-        z : np.array
-            value of a function at that given x,y
-        name : str
-            file name of the picture you want to save
-        """
-        fig, ax = plt.subplots()
-        plot = ax.contourf(self.x, self.y, z)
-        cbar = fig.colorbar(plot)
-        plot.set_clim(-10,6)
-
-        if name != '' :
-            plt.title(title)
-            plt.savefig("output/images/"+name, dpi = 600)
-        #plt.clf()
-        plt.close('all')
-
-    def plotter_k_each(self, n, load_type):
-        """Plots the value of each K function until the desired
-        degree is reached.
-
-        n : int
-            Zernike order
-        load_type : {"ana", "num"}, str
-            chooses the integration scheme the precalculated
-            ck_nm will be chosen from
-        """
-        Fa = base_input(self.x, self.y)
-        self.plotter(Fa)
-        
-        Fk = 0
-        for i in range(n+1):
-            Fk += self.gen_k_n(i, load_type)
-            print("n:", i)
-            self.plotter(Fk)
-
-    def err_l2_calc(self, n, load_type):
+    def err_l2_calc(self, n, ck_method, ck_type, function = base_input):
         """Calculates the relative L2 error of the difference
         between the analytical function and the K
         approximation. Each subsequent error calculation uses
@@ -210,9 +349,12 @@ class KApprox(ApproxParent):
         ----------
         n : int
             Zernike Order
-        load_type : {"ana", "num"}, str
-            chooses the integration scheme the precalculated
-            ck_nm will be chosen from
+        ck_method : {"calc", "load"}, str
+            chooses to either calculate or load the ck
+        ck_type : {"num", "ana"}, str
+            chooses the calculation scheme for the ck
+        function : func(x,y)
+            the function to be expanded with the ZBasis
         
         Notes
         -----
@@ -234,7 +376,7 @@ class KApprox(ApproxParent):
         for i in range(n+1):
             print("n:", i)
 
-            Fk += self.gen_k_n(i, load_type)
+            Fk += self.gen_k_n(i, ck_method, ck_type, function)
             Dk = Fa - Fk
 
             l2_err = la.norm(Dk, 2) / la.norm(Fa, 2)
@@ -242,8 +384,7 @@ class KApprox(ApproxParent):
 
         return l2_errs
 
-
-    def err_linf_calc(self, n, load_type):
+    def err_linf_calc(self, n, ck_method, ck_type, function = base_input):
         """Calculates the relative Linf error of the difference
         between the analytical function and the K
         approximation. Each subsequent error calculation uses
@@ -253,9 +394,12 @@ class KApprox(ApproxParent):
         ----------
         n : int
             Zernike Order
-        load_type : {"ana", "num"}, str
-            chooses the integration scheme the precalculated
-            ck_nm will be chosen from
+        ck_method : {"calc", "load"}, str
+            chooses to either calculate or load the ck
+        ck_type : {"num", "ana"}, str
+            chooses the calculation scheme for the ck
+        function : func(x,y)
+            the function to be expanded with the ZBasis
 
         Notes
         -----
@@ -277,14 +421,13 @@ class KApprox(ApproxParent):
         for i in range(n+1):
             print("n:", i)
 
-            Fk += self.gen_k_n(i, load_type)
+            Fk += self.gen_k_n(i, ck_method, ck_type, function)
             Dk = Fa - Fk
 
             linf_err = la.norm(Dk, np.inf) / la.norm(Fa, np.inf)
             linf_errs.append(linf_err)
 
         return linf_errs
-
 
     def kit_and_caboodle(self, n):
         """This function is what I ran to generate all the
@@ -315,7 +458,6 @@ class KApprox(ApproxParent):
         Fk_sci = 0
         Fk_my = 0
 
-
         # plotting the analytical input
         print("Plotting the function analytically.")
         self.plotter(Fa, "ana.png", "Analytical")
@@ -324,7 +466,6 @@ class KApprox(ApproxParent):
         for i in range(n+1):
             t0 = time.time()
             print("----- n = {} -----".format(i))
-
 
             # getting each K for the respective order
             print("calculating approximations")
@@ -335,7 +476,6 @@ class KApprox(ApproxParent):
             tf = time.time()
             print(tf - t0)
 
-
             # plotting the approximations
             print("plotting approximations")
 
@@ -344,7 +484,6 @@ class KApprox(ApproxParent):
 
             tf = time.time()
             print(tf - t0)
-
 
             # calculating errors
             print("calculating errors")

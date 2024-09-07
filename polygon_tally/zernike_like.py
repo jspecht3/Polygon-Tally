@@ -619,7 +619,7 @@ class ZBasis(ZernikeParent):
         self.cz = cz
         self.cz_type = "Numerical Integration w/ Riemann Sum"
 
-        return ck
+        return cz
 
 class KBasis(ZernikeParent):
     """Class for the Zernike-like K basis vectors, which are
