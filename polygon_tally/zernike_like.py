@@ -625,7 +625,7 @@ class KBasis(ZernikeParent):
     """Class for the Zernike-like K basis vectors, which are
     orthogonal over a regular polygon with p sides and a
     radius, center to corner distance, of R0"""
-
+    
     def __init__(self, n, m, num_sides, polygon_radius):
         """
         Parameters
