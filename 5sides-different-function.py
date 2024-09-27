@@ -1,6 +1,9 @@
 from polygon_tally import *
 import threading
 
+import matplotlib
+matplotlib.use("agg")
+
 # global variables
 path = "output/different-polygon-function/"
 
