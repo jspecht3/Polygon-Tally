@@ -16,7 +16,7 @@ def write_output(string, file_path):
 order = 35
 radius = 1
 mesh_size = 5_000
-side_num = 5
+side_num = 8
 
 def function(x, y):
     return 10 * x**2 * y - 7 * x * y**2 + 5 * y**4
