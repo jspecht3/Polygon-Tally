@@ -4,3 +4,6 @@
 
 # module
 polygon_tally/__pycache__
+
+# checkpoints
+*.ipynb_checkpoints*

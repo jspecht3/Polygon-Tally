@@ -190,8 +190,7 @@ class ZernikeParent:
             return (2 * (n + 1))**(1 / 2)
         else:
             return (n + 1)**(1 / 2)
-    
-
+   
     def r_nm(self, rho, n, m):
         """Calculates an intermediate function needed for the
         Zernike polynomials.
@@ -218,7 +217,7 @@ class ZernikeParent:
 
         return R_nm
 
-
+    
     def zernike_nm(self, rho, phi, n, m):
         """Creates the zernike function associated with the
         respective n, Zernike order, and m, Zernike sub-order,
@@ -620,6 +619,7 @@ class ZBasis(ZernikeParent):
         self.cz_type = "Numerical Integration w/ Riemann Sum"
 
         return cz
+
 
 class KBasis(ZernikeParent):
     """Class for the Zernike-like K basis vectors, which are
