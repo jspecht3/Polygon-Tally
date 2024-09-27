@@ -190,8 +190,7 @@ class ZernikeParent:
             return (2 * (n + 1))**(1 / 2)
         else:
             return (n + 1)**(1 / 2)
-    
-
+   
     def r_nm(self, rho, n, m):
         """Calculates an intermediate function needed for the
         Zernike polynomials.
@@ -218,7 +217,7 @@ class ZernikeParent:
 
         return R_nm
 
-
+    
     def zernike_nm(self, rho, phi, n, m):
         """Creates the zernike function associated with the
         respective n, Zernike order, and m, Zernike sub-order,
@@ -621,11 +620,12 @@ class ZBasis(ZernikeParent):
 
         return cz
 
+
 class KBasis(ZernikeParent):
     """Class for the Zernike-like K basis vectors, which are
     orthogonal over a regular polygon with p sides and a
     radius, center to corner distance, of R0"""
-
+    
     def __init__(self, n, m, num_sides, polygon_radius):
         """
         Parameters
