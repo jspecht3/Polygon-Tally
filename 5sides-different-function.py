@@ -68,7 +68,7 @@ def calc_kbasis():
             bk._gen_all_cd(mesh_size)
 
             # ck
-            ck = bk.num_ck_nm(mesh_size)
+            ck = bk.num_ck_nm(mesh_size, function)
             ck_out = (str(n) + "," + str(m) + "," + str(ck))
             write_output(ck_out, loc_path + "cks.txt")
             
@@ -114,7 +114,7 @@ def calc_zbasis():
             bz._gen_all_cd(mesh_size)
 
             # cz
-            cz = bz.num_cz_nm(mesh_size)
+            cz = bz.num_cz_nm(mesh_size, function)
             cz_out = (str(n) + "," + str(m) + "," + str(cz))
             write_output(cz_out, loc_path + "czs.txt")
             
