@@ -1,6 +1,9 @@
 from polygon_tally import *
 import threading
 
+import matplotlib
+matplotlib.use("agg")
+
 # global variables
 path = "output/different-polygon-function/"
 
@@ -13,7 +16,7 @@ def write_output(string, file_path):
 order = 35
 radius = 1
 mesh_size = 5_000
-side_num = 5
+side_num = 8
 
 def function(x, y):
     return 10 * x**2 * y - 7 * x * y**2 + 5 * y**4
@@ -28,7 +31,7 @@ if not os.path.isdir(loc_path):
 
 # plotting the analytical function
 def plot_ana():
-    k1 = ZApprox(side_num, radius, mesh_size)
+    k1 = KApprox(side_num, radius, mesh_size)
     x, y = k1.x, k1.y
     
     # analytical
@@ -65,7 +68,7 @@ def calc_kbasis():
             bk._gen_all_cd(mesh_size)
 
             # ck
-            ck = bk.num_ck_nm(mesh_size)
+            ck = bk.num_ck_nm(mesh_size, function)
             ck_out = (str(n) + "," + str(m) + "," + str(ck))
             write_output(ck_out, loc_path + "cks.txt")
             
@@ -111,7 +114,7 @@ def calc_zbasis():
             bz._gen_all_cd(mesh_size)
 
             # cz
-            cz = bz.num_cz_nm(mesh_size)
+            cz = bz.num_cz_nm(mesh_size, function)
             cz_out = (str(n) + "," + str(m) + "," + str(cz))
             write_output(cz_out, loc_path + "czs.txt")
             
