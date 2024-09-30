@@ -1,38 +1,98 @@
-/* This is the c++ implementation of the KBasis and ZBasis
- * classes that I previously made in python. This
- * implementation is to check that I know how to code in c++.
- * There should be agreement with the ck coefficients for the
- * transformed zernike basis functions. */
+/* Radius transform from polygonal coordinates into their 
+ * respective unit disk coordinates */
 
+#include <cstdlib>
 #include <iostream>
-#include <string>
-#include <Eigen/Dense>
-#include "zernike.h"
+#include <cmath>
+#include <array>
+#include <math.h>
 
-using Eigen::MatrixXd;
-using namespace std;
+// converts cartesian to polar coordinates
+std::array<double,2> c2p(std::array<double,2> cart) {
+	double x = cart[0];
+	double y = cart[1];
+
+	double r = std::sqrt(x * x + y * y);
+	double theta = std::atan2(y, x);
+
+	std::array<double,2> polar;
+	polar[0] = r;
+	polar[1] = theta;
+
+	return polar;
+}
+
+// intermediate function u_alpha for variable radius calc
+double u_alpha(double theta, int num_sides) {
+	double alpha = M_PI / num_sides;
+	double drop = (theta + alpha) / (2 * alpha);
+	int int_drop = drop;
+
+	double u_alpha;
+	u_alpha = theta - int_drop * 2 * alpha;
+
+	return u_alpha;
+}
+
+// takes the cart coords and returns the variable radius
+double r_alpha(
+		std::array<double,2> cart,
+		double polygon_radius,
+		int num_sides) {
+	
+	// get the polar coords
+	std::array<double,2> polar = c2p(cart);
+	double r = polar[0];
+	double theta = polar[1];
+
+	// calculating
+	double alpha = M_PI / num_sides;
+
+	double r_alpha;
+	r_alpha = polygon_radius * cos(alpha) / 
+		cos(u_alpha(theta, num_sides));
+
+	return r_alpha;
+}
+
 
 int main() {
-/*
-	MatrixXd rho(1,1);
-	MatrixXd phi(1,1);
+	// getting the values from the customer
+	std::cout << "----- Input -----" << std::endl;
 
-	rho(0,0) = 0.5;
-	phi(0,0) = 3.14159;
+	int num_sides;
+	std::cout << "Number of sides: ";
+	std::cin >> num_sides;
 
-	MatrixXd coords[2] = {rho, phi};
+	double polygon_radius;
+	std::cout << "Polygon Radius: ";
+	std::cin >> polygon_radius;
 
-	MatrixXd m(2,2);
-	m(0,0) = 3;
-	m(1,0) = 2.5;
-	m(0,1) = -1;
-	m(1,1) = m(1,0) + m(0,1);
+	// getting coordinates
+	std::array<double,2> cart;
+	
+	std::cout << "x coord: ";
+	std::cin >> cart[0];
 
-	std::cout << coords[0] << std::endl;
-*/
-	Zernike z1 = Zernike();
-	z1.n_nm();
-	cout << z1.n_nm_ << endl;
+	std::cout << "y coord: ";
+	std::cin >> cart[1];
+
+	// converting
+	std::array<double,2> output;
+    output = c2p(cart);
+
+	double r = { output[0] };
+	double theta = { output[1] };
+
+	double variable_radius;
+	variable_radius = r_alpha(cart, polygon_radius, num_sides);
+
+	// output
+	std::cout << "----- Output -----" << std::endl;
+	std::cout << "r: " << r << 
+		"\ntheta: " << theta << 
+		"\nvariable radius: " << variable_radius << 
+		"\nrho: " << r / variable_radius << std::endl;
 
 	return 0;
 }
