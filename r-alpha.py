@@ -9,6 +9,8 @@ with open("temp-check.txt", 'r') as file:
         x = float(row[2])
         y = float(row[3])
 
+# testing
+
 # parameters
 r = (x**2 + y**2)**(1/2) 
 theta = np.arctan2(y, x)
