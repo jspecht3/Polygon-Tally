@@ -3,6 +3,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <string>
 #include <cmath>
 #include <array>
 #include <math.h>
@@ -58,7 +59,7 @@ double r_alpha(
 
 int main() {
 	// getting the values from the customer
-	std::cout << "----- Input -----" << std::endl;
+	std::cout << "\n----- Input -----" << std::endl;
 
 	int num_sides;
 	std::cout << "Number of sides: ";
@@ -77,6 +78,16 @@ int main() {
 	std::cout << "y coord: ";
 	std::cin >> cart[1];
 
+
+/*	
+	double num_sides = std::stoi(argv[0]);
+	double polygon_radius = std::stod(argv[1]);
+
+	std::array<double,2> cart;
+	cart[0] = std::stod(argv[2]);
+	cart[1] = std::stod(argv[3]);
+*/
+
 	// converting
 	std::array<double,2> output;
     output = c2p(cart);
@@ -88,7 +99,7 @@ int main() {
 	variable_radius = r_alpha(cart, polygon_radius, num_sides);
 
 	// output
-	std::cout << "----- Output -----" << std::endl;
+	std::cout << "\n----- C++ Output -----" << std::endl;
 	std::cout << "r: " << r << 
 		"\ntheta: " << theta << 
 		"\nvariable radius: " << variable_radius << 
