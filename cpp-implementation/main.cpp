@@ -6,7 +6,6 @@
 #include <string>
 #include <cmath>
 #include <array>
-#include <math.h>
 
 // converts cartesian to polar coordinates
 std::array<double,2> c2p(std::array<double,2> cart) {
@@ -14,7 +13,7 @@ std::array<double,2> c2p(std::array<double,2> cart) {
 	double y = cart[1];
 
 	double r = std::sqrt(x * x + y * y);
-	double theta = std::atan2(y, x);
+	double theta = std::atan2(y, x) + 2 * M_PI * (y < 0); // need this because
 
 	std::array<double,2> polar;
 	polar[0] = r;
@@ -28,9 +27,16 @@ double u_alpha(double theta, int num_sides) {
 	double alpha = M_PI / num_sides;
 	double drop = (theta + alpha) / (2 * alpha);
 	int int_drop = drop;
-
 	double u_alpha;
 	u_alpha = theta - int_drop * 2 * alpha;
+
+	/*
+	std::cout << "----- U Alpha Calcs -----" << std::endl;
+	std::cout << "alpha: " << alpha << std::endl;
+	std::cout << "drop: " << drop << std::endl;
+	std::cout << "int drop: " << int_drop << std::endl;
+	std::cout << "u alpha: " << u_alpha << std::endl;
+	*/
 
 	return u_alpha;
 }
@@ -58,6 +64,7 @@ double r_alpha(
 
 
 int main() {
+/*
 	// getting the values from the customer
 	std::cout << "\n----- Input -----" << std::endl;
 
@@ -77,16 +84,14 @@ int main() {
 
 	std::cout << "y coord: ";
 	std::cin >> cart[1];
-
-
-/*	
-	double num_sides = std::stoi(argv[0]);
-	double polygon_radius = std::stod(argv[1]);
+*/
+	// manual inputs
+	int num_sides = 5;
+	double polygon_radius = 10;
 
 	std::array<double,2> cart;
-	cart[0] = std::stod(argv[2]);
-	cart[1] = std::stod(argv[3]);
-*/
+	cart[0] = -1;
+	cart[1] = -1;
 
 	// converting
 	std::array<double,2> output;
@@ -99,6 +104,12 @@ int main() {
 	variable_radius = r_alpha(cart, polygon_radius, num_sides);
 
 	// output
+/* 	std::cout << "\n----- Input -----" << std::endl;
+	std::cout << "Number of sides: " << num_sides <<
+		"\nPolygon Radius: " << polygon_radius <<
+		"\nx: " << cart[0] << "\ny: " << cart[1];
+*/
+
 	std::cout << "\n----- C++ Output -----" << std::endl;
 	std::cout << "r: " << r << 
 		"\ntheta: " << theta << 
