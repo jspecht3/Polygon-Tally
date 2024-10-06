@@ -64,34 +64,34 @@ double r_alpha(
 
 
 int main() {
-/*
 	// getting the values from the customer
-	std::cout << "\n----- Input -----" << std::endl;
+//	std::cout << "\n----- Input -----" << std::endl;
 
 	int num_sides;
-	std::cout << "Number of sides: ";
+//	std::cout << "Number of sides: ";
 	std::cin >> num_sides;
 
 	double polygon_radius;
-	std::cout << "Polygon Radius: ";
+//	std::cout << "Polygon Radius: ";
 	std::cin >> polygon_radius;
 
 	// getting coordinates
 	std::array<double,2> cart;
 	
-	std::cout << "x coord: ";
+//	std::cout << "x coord: ";
 	std::cin >> cart[0];
 
-	std::cout << "y coord: ";
+//	std::cout << "y coord: ";
 	std::cin >> cart[1];
-*/
-	// manual inputs
+
+/*	// manual inputs
 	int num_sides = 5;
 	double polygon_radius = 10;
 
 	std::array<double,2> cart;
 	cart[0] = -1;
 	cart[1] = -1;
+*/
 
 	// converting
 	std::array<double,2> output;

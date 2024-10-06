@@ -1,6 +1,5 @@
 from polygon_tally import *
 
-"""
 # importing data
 with open("temp-check.txt", 'r') as file:
     reader = csv.reader(file)
@@ -9,12 +8,14 @@ with open("temp-check.txt", 'r') as file:
         polygon_radius = float(row[1])
         x = float(row[2])
         y = float(row[3])
+
 """
 # testing
 num_sides = 5
 polygon_radius = 10
 x = -1
 y = -1
+"""
 
 # parameters
 def test():
