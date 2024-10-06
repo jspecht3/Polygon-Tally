@@ -38,7 +38,11 @@ def parse_ck_csv():
     ana_ck = []
 
     # filling the lists
-    with open('data/ck_num_vs_ana.txt', 'r') as file:
+    current_path = __file__
+    split = current_path.split("zernike_like.py")[0]
+    data_path = split + "data/ck_num_vs_ana.txt"
+
+    with open(data_path, 'r') as file:
         reader = csv.reader(file)
         for row in reader:
             ck_n.append(row[0])
@@ -186,8 +190,7 @@ class ZernikeParent:
             return (2 * (n + 1))**(1 / 2)
         else:
             return (n + 1)**(1 / 2)
-    
-
+   
     def r_nm(self, rho, n, m):
         """Calculates an intermediate function needed for the
         Zernike polynomials.
@@ -214,7 +217,7 @@ class ZernikeParent:
 
         return R_nm
 
-
+    
     def zernike_nm(self, rho, phi, n, m):
         """Creates the zernike function associated with the
         respective n, Zernike order, and m, Zernike sub-order,
@@ -240,67 +243,9 @@ class ZernikeParent:
             return self.n_nm(n, m) * self.r_nm(rho, n, m) * np.cos(m * phi)
         else:
             return -1 * self.n_nm(n, m) * self.r_nm(rho, n, m) * np.sin(m * phi)
-    
-
-class ZBasis(ZernikeParent):
-    """Class for the Zernike basis vectors, which are orthogonal
-    over the unit disk"""
-    # i dont wanna make this rn imma do it later
 
 
-class KBasis(ZernikeParent):
-    """Class for the Zernike-like K basis vectors, which are
-    orthogonal over a regular polygon with p sides and a radius,
-    center to corner distance, of R0"""
-
-    def __init__(self, n, m, num_sides, polygon_radius):
-        """
-        Parameters
-        ----------
-        n : int
-            Zernike order
-        m : int
-            Zernike sub-order
-        num_sides : int
-            number of sides on the regular polygon
-        polygon_radius : float
-            radius of the regular polygon
-        
-        Notes
-        -----
-        alpha : float
-            half the angle spanned by a single sector of the
-            disk/polygon. As there are the same number of sides
-            as there are sectors and alpha spans half a sector,
-            2*alpha can be found by dividing 2*pi by num_sides.
-        side_length : float
-            side length of a side of the regular polygon 
-        ck : float
-            the factorization contant used in the decomposition
-            of a function into a series of KBasis vectors
-        ck_type : str
-            ck can be calculated in a few ways, so this shows
-            the current way it was calculated
-        """
-        # inheriting from ZernikeBase
-        super().__init__(n, m)
-
-        self.num_sides = num_sides
-        self.polygon_radius = polygon_radius
-        self.alpha = np.pi / num_sides
-        self.side_length = polygon_radius / 2**(1/2)
-        self.ck = None
-        self.ck_type = None
-
-    def show(self):
-        print("n:", self.n)
-        print("m:", self.m)
-        print("Number of Sides:", self.num_sides)
-        print("Polygon Radius:", self.polygon_radius)
-        print("ck value:", self.ck)
-        print("ck Calculation Method:", self.ck_type)
-
-    # mapping functions
+    # start of coordinate transforms
     def cart_to_polar(self, x, y):
         """Takes the cartesian coordinates on the polygon (x,y)
         and returns the polar coordinates on the polygon
@@ -316,10 +261,10 @@ class KBasis(ZernikeParent):
         Notes
         -----
         The addition of the boolean multiplication when
-        calculating theta is needed to fix the mapping done with
-        np.arctan2, which is unable to determine the quadrant of
-        the coordinates correctly.
-        """ 
+        calculating theta is needed to fix the mapping done
+        with np.arctan2, which is unable to determine the
+        quadrant of the coordinates correctly.
+        """
         r = (x**2 + y**2)**(1/2)
         theta = np.arctan2(y,x) + (2 * np.pi * (y < 0))
         
@@ -342,16 +287,18 @@ class KBasis(ZernikeParent):
         y = r * np.sin(theta)
 
         return x, y
+    # end of coordinate transforms
 
 
+    # start of variable radius functions
     def u_alpha_theta(self, theta):
         """Generates the intermediate function U_alpha from
         theta (polygon polar). This function is a piece-wise
         linear function with slope = 1 except at the each theta 
         where a corner occurs. Immediately before the corner,
         the value of U_alpha is at a maximum of alpha and,
-        immediately after the corner, the value of U_alpha is at
-        a minimum of -alpha.
+        immediately after the corner, the value of U_alpha is
+        at a minimum of -alpha.
 
         Parameters
         ----------
@@ -369,7 +316,7 @@ class KBasis(ZernikeParent):
 #        u_alpha = theta - int(drop) * (2 * self.alpha)
         
         return u_alpha
-
+    
 
     def u_alpha_xy(self, x, y):
         """Generates the intermediate function U_alpha from x,y 
@@ -408,6 +355,11 @@ class KBasis(ZernikeParent):
         
         variable_radius = numerator / denominator
 
+        print("theta:", theta)
+        print("top: ", numerator)
+        print("bot: ", denominator)
+        print("r_alpha: ", variable_radius)
+        
         return variable_radius
 
 
@@ -431,8 +383,305 @@ class KBasis(ZernikeParent):
         variable_radius = self.variable_radius_theta(theta)
 
         return variable_radius
+    # end of variable radius functions
 
 
+    # start of coordinate generators
+    ## start coordinate generators
+    def _check_mesh_size_exists(self):
+        """Verifies the KBasis has a mesh size associated for
+        numerical integration.
+        """
+        if self.mesh_size == None:
+            raise AttributeError("the attribute 'self.mesh_size' is undefined.")
+
+    
+    def _gen_rhophi(self):
+        """Generates a matrix of mesh_size by mesh_size over
+        the polar coordinate space of the disk.
+        """
+        self._check_mesh_size_exists()
+
+        rho = np.linspace(0, 1, self.mesh_size)
+        phi = np.linspace(0, 2 * np.pi, self.mesh_size)
+        
+        rho, phi = np.meshgrid(rho, phi)
+        
+        self._rho = rho
+        self._phi = phi
+
+
+    def _gen_uv(self):
+        """Generates a matrix of mesh_size by mesh_size over
+        the cartesian coordinate space of the disk.
+        """
+        self._check_mesh_size_exists()
+
+        if not hasattr(self, "_rho"):
+            raise AttributeError("No rho, phi defined")
+        
+        self._u = self._rho * np.cos(self._phi)
+        self._v = self._rho * np.sin(self._phi)
+
+    
+    def _gen_rtheta(self):
+        """Generates a matrix of mesh_size by mesh_size over
+        the polar coordinate space of the polygon.
+        """
+        self._check_mesh_size_exists()
+
+        if not hasattr(self, "_rho"):
+            raise AttributeError("No rho, phi defined")
+
+        var_rad = self.variable_radius_theta(self._phi)
+        self._r = var_rad * self._rho
+        self._theta = self._phi
+
+
+    def _gen_xy(self):
+        """Generates a matrix of mesh_size by mesh_size over
+        the cartesian coordinate space of the polygon.
+        """ 
+        self._check_mesh_size_exists()
+
+        if not hasattr(self, "_r"):
+            raise AttributeError("No r, theta defined")
+
+        self._x = self._r * np.cos(self._theta)
+        self._y = self._r * np.sin(self._theta)
+    ## end coordinate generators
+
+
+    ## start polar differentials
+    def _gen_polar_diffs_disk(self):
+        """Generates the polar differentials for the disk"""
+        if not hasattr(self, "_rho"):
+            raise AttributeError("No rho, phi defined")
+
+        drho = self._rho[:,1]
+        _, self._drho = np.meshgrid(drho, drho)
+        self._dphi = self._phi[1,1]
+        
+    
+    def _gen_polar_diffs_polygon(self):
+        """Generates the polar differentials for the polygon"""
+
+        if not hasattr(self, "_r"):
+            raise AttributeError("No r, theta defined")
+
+        dr = self._r[:,1]
+        _, self._dr = np.meshgrid(dr, dr)
+        self._dtheta = self._theta[1,1]
+    ## end polar differentials
+
+
+    def _gen_all_coords(self, mesh_size):
+        """Generates polar, cartesian coordinates for the
+        disk, polygon.
+        """
+        self.mesh_size = mesh_size
+        self._gen_rhophi()
+        self._gen_uv()
+        self._gen_rtheta()
+        self._gen_xy()
+   
+
+    def _gen_all_diffs(self, mesh_size):
+        """Generates all polar differentials used in the
+        numerical integration for the disk, polygon."""
+        self.mesh_size = mesh_size
+        self._gen_polar_diffs_disk()
+        self._gen_polar_diffs_polygon()
+
+    def _gen_all_cd(self, mesh_size):
+        """Generates all coordinates and differentials"""
+        self._gen_all_coords(mesh_size)
+        self._gen_all_diffs(mesh_size)
+
+
+    def check_coords(self):
+        """Checks which coordinates are defined as attributes.
+        """
+        print("------ Coordinates ------")
+        if hasattr(self, "_rho"):
+            print("Polar Disk :      DEFINED")
+        else:
+            print("Polar Disk :    UNDEFINED")
+
+        if hasattr(self, "_u"):
+            print("Cart Disk  :      DEFINED")
+        else:
+            print("Polar Disk :    UNDEFINED")
+
+        if hasattr(self, "_r"):
+            print("Polar Poly :      DEFINED")
+        else:
+            print("Polar Poly :    UNDEFINED")
+
+        if hasattr(self, "_x"):
+            print("Cart Poly  :      DEFINED")
+        else:
+            print("Cart Poly  :    UNDEFINED")
+        
+        print("-- Polar Differentials --") 
+        if hasattr(self, "_drho"):
+            print("Diffs Disk :      DEFINED")
+        else:
+            print("Diffs Disk :    UNDEFINED")
+ 
+        if hasattr(self, "_dr"):
+            print("Diffs Poly :      DEFINED")
+        else:
+            print("Diffs Poly :    UNDEFINED")
+    # end of coordinate generators
+
+
+class ZBasis(ZernikeParent):
+    """Class for the Zernike basis vectors, which are
+    orthogonal over a disk of radius R0. The functions in
+    this approximation are 0 outside of the """
+    
+    def __init__(self, n, m, num_sides, polygon_radius):
+        """
+        Parameters
+        ----------
+        n : int
+            Zernike order
+        m : int
+            Zernike sub-order
+        num_sides : int
+            number of sides on the regular polygon
+        polygon_radius : float
+            radius of the regular polygon, the radius of
+            tangency the disk has with the corners of the 
+            polygon
+        
+        Notes
+        -----
+        alpha : float
+            half the angle spanned by a single sector of the
+            disk/polygon. As there are the same number of sides
+            as there are sectors and alpha spans half a sector,
+            2*alpha can be found by dividing 2*pi by num_sides.
+        ck : float
+            the factorization contant used in the decomposition
+            of a function into a series of KBasis vectors
+        ck_type : str
+            ck can be calculated in a few ways, so this shows
+            the current way it was calculated
+        """
+        # inheriting from ZernikeBase
+        super().__init__(n, m)
+
+        self.num_sides = num_sides
+        self.polygon_radius = polygon_radius
+        self.alpha = np.pi / num_sides
+        self.cz = None
+        self.cz_type = None
+        self.mesh_size = None
+
+
+    def z_nm(self, x, y):
+        r, theta = self.cart_to_polar(x, y)
+
+        rho = r / self.polygon_radius
+        phi = theta
+
+        z_nm_value = self.zernike_nm(rho, phi, self.n, self.m)
+
+        return z_nm_value
+
+
+    def num_cz_nm(self, mesh_size, function = base_input):
+        """Numerically calculates the coefficient, cz, for the
+        respective z_nm usinga simple, centered, Riemann
+        numericanl integration scheme.
+
+        Parameters
+        ----------
+        mesh_size : int
+            size of the mesh used for the numerical integration
+        function : func(x,y)
+            function to be approximated by decomposition into a
+            sum of cz's times the z_nm's.
+            function = Sigma_(n=0)^(n=infty) [cz_nm * z_nm]
+        
+        Notes
+        -----
+        The measure, dmu, by which the z_nm's are orthonormal
+        is the same as that for the k_nm's as the area we are
+        investigating is the same in both scenarios. This can
+        be verified using z_00 and k_00 and an input function
+        that is constant. The value of cz will equal the value
+        of the constant of the function.
+
+        ex: function = (lambda x,y : 1) corresponds to cz = 1
+        """
+        dmu = self._rho * self._drho * self._dphi / np.pi
+        cz = np.sum(dmu * function(self._x, self._y) * self.z_nm(self._x, self._y))
+
+        self.cz = cz
+        self.cz_type = "Numerical Integration w/ Riemann Sum"
+
+        return cz
+
+
+class KBasis(ZernikeParent):
+    """Class for the Zernike-like K basis vectors, which are
+    orthogonal over a regular polygon with p sides and a
+    radius, center to corner distance, of R0"""
+    
+    def __init__(self, n, m, num_sides, polygon_radius):
+        """
+        Parameters
+        ----------
+        n : int
+            Zernike order
+        m : int
+            Zernike sub-order
+        num_sides : int
+            number of sides on the regular polygon
+        polygon_radius : float
+            radius of the regular polygon
+        
+        Notes
+        -----
+        alpha : float
+            half the angle spanned by a single sector of the
+            disk/polygon. As there are the same number of sides
+            as there are sectors and alpha spans half a sector,
+            2*alpha can be found by dividing 2*pi by num_sides.
+        side_length : float
+            side length of a side of the regular polygon 
+        ck : float
+            the factorization contant used in the decomposition
+            of a function into a series of KBasis vectors
+        ck_type : str
+            ck can be calculated in a few ways, so this shows
+            the current way it was calculated
+        """
+        # inheriting from ZernikeBase
+        super().__init__(n, m)
+
+        self.num_sides = num_sides
+        self.polygon_radius = polygon_radius
+        self.alpha = np.pi / num_sides
+        self.side_length = polygon_radius / 2**(1/2)
+        self.ck = None
+        self.ck_type = None
+        self.mesh_size = None
+
+    def show(self):
+        print("n:", self.n)
+        print("m:", self.m)
+        print("Number of Sides:", self.num_sides)
+        print("Polygon Radius:", self.polygon_radius)
+        print("ck value:", self.ck)
+        print("ck Calculation Method:", self.ck_type)
+        print("Mesh Size:", self.mesh_size)
+
+
+    # start of basis vectors
     def k_nm(self, x, y):
         """Maps the Zernike polynomial to be orthogonal on a
         regular polygon.
@@ -463,6 +712,30 @@ class KBasis(ZernikeParent):
 
         return k_nm_value
 
+    
+    def num_ck_nm(self, mesh_size, function = base_input):
+        """Numerically calculates the coefficient, ck, for the
+        respective k_nm using a simple, cenetered, Riemann
+        numerical integration scheme.
+
+        Parameters
+        ---------- 
+        mesh_size : int
+            size of the mesh used for the numerical integration
+        function : func(x,y)
+            function to be approximated by decomposition into a
+            sum of ck's times the k_nm's.
+            function = Sigma_(n=0)^(n=infty) [ck_nm * k_nm]
+        """
+        dmu = self._rho * self._drho * self._dphi / np.pi
+
+        ck = np.sum(dmu * function(self._x, self._y) * self.k_nm(self._x, self._y))
+
+        self.ck = ck
+        self.ck_type = "Numerical Integration w/ Riemann Sum"
+
+        return ck
+
 
     def ana_ck_nm(self, function = base_input):
         """Analytically calculates the coefficient, ck, for the
@@ -481,6 +754,16 @@ class KBasis(ZernikeParent):
 
         Notes
         -----
+        THE DESCRIPTION IS WRONG!!! THIS IS NOT AN ANALYTICAL
+        INTEGRATION SCHEME. I WANT TO DO OTHER THINGS ATM, SO
+        I AM NOT CHANGING THE NAMING CONVENTIONS, BUT THIS IS
+        USING SCIPY'S QUADRATURE PACK, WHICH COMES FROM THE
+        FORTRAN QUADRATURE RULES.
+
+        THIS ALSO ONLY WORKS WITH A SQUARE FOR NOW. MAYBE
+        FOREVER BECAUSE THIS IS ONLY MEANT TO BE A COMPARISON
+        AGAINST A RIEMANN SUM.
+
         The calculation for this can get rather computationally
         expensive, which is especially true when considering
         cumulative, all m's for a given n, approximations at
@@ -505,15 +788,15 @@ class KBasis(ZernikeParent):
         ck = nquad(_toInt, [[-sl,sl],[-sl,sl]])[0]
     
         self.ck = ck
-        self.ck_type = "Analytically Calculated"
+        self.ck_type = "Calculated with scipy"
 
         return ck
 
 
     def load_ck_nm(self, load_type):
         """Loads precalculated ck_values to reduce the runtime
-        of the approximations. These values were calculated with
-        the same functions that are used in this class.
+        of the approximations. These values were calculated
+        with the same functions that are used in this class.
         (THEN ACTAULLY DO THAT AND MAKE THE NUMERICAL ONE TOO)
 
         Parameters

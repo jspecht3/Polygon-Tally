@@ -28,7 +28,7 @@ python r-alpha.py
 
 
 mv cpp-implementation/main .
-./main
+echo "$n $rad $x $y" | ./main
 
 mv main cpp-implementation/
 
