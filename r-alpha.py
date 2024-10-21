@@ -20,7 +20,7 @@ y = -1
 # parameters
 def test():
     r = (x**2 + y**2)**(1/2) 
-    theta = np.arctan2(y, x)
+    theta = np.arctan2(y, x) + 2 * np.pi * (y < 0)
 
     # creating the class
     k1 = KBasis(0, 0, num_sides, polygon_radius)

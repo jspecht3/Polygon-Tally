@@ -25,20 +25,8 @@ std::array<double,2> c2p(std::array<double,2> cart) {
 // intermediate function u_alpha for variable radius calc
 double u_alpha(double theta, int num_sides) {
 	double alpha = M_PI / num_sides;
-	double drop = (theta + alpha) / (2 * alpha);
-	int int_drop = drop;
-	double u_alpha;
-	u_alpha = theta - int_drop * 2 * alpha;
-
-	/*
-	std::cout << "----- U Alpha Calcs -----" << std::endl;
-	std::cout << "alpha: " << alpha << std::endl;
-	std::cout << "drop: " << drop << std::endl;
-	std::cout << "int drop: " << int_drop << std::endl;
-	std::cout << "u alpha: " << u_alpha << std::endl;
-	*/
-
-	return u_alpha;
+	int drop = double((theta + alpha) / (2 * alpha));
+	return double(theta - drop * 2 * alpha);
 }
 
 // takes the cart coords and returns the variable radius
