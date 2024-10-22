@@ -234,8 +234,8 @@ src1 = openmc.IndependentSource(space=point1)
 settings = openmc.Settings()
 settings.source = [src1]
 settings.particles = 10000
-settings.batches = 1000
-settings.inactive = 50
+settings.batches = 10000
+settings.inactive = 1000
 settings.export_to_xml()
 
 

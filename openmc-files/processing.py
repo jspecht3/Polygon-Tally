@@ -1,24 +1,45 @@
+import openmc
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+
+# importing the filters
+from openmc.filter import MeshFilter, DistribcellFilter
+from openmc.filter_expansion import ZernikeFilter
+
 # post-processing
 ## getting scores
-sp = openmc.StatePoint('statepoint.1000.h5')
+sp = openmc.StatePoint('statepoint.10000.h5')
 
 for tally_key in sp.tallies:
     tally = sp.tallies[tally_key]
+    filter_type = type(tally.filters[0])
+    filter_ = tally.filters[0]
 
-    if tally.id == mesh_heat.id: mesh_heat_scores = tally
-    if tally.id == mesh_flux.id: mesh_flux_scores = tally
+    if filter_type == MeshFilter and tally.scores == ['kappa-fission']:
+        mesh_heat_scores = tally
+    if filter_type == MeshFilter and tally.scores == ['flux']:
+        mesh_flux_scores = tally 
 
-    if tally.id == distrib_heat.id: distrib_heat_scores = tally
-    if tally.id == distrib_flux.id: distrib_flux_scores = tally
+    if filter_type == DistribcellFilter and tally.scores == ['kappa-fission']:
+        distrib_heat_scores = tally
+    if filter_type == DistribcellFilter and tally.scores == ['flux']:
+        distrib_flux_scores = tally
 
-    if tally.id == zernike_heat.id: zernike_heat_scores = tally
-    if tally.id == zernike_flux.id: zernike_flux_scores = tally
+    if filter_type == ZernikeFilter and tally.scores == ['kappa-fission'] and filter_.num_sides == 0:
+        zernike_heat_scores = tally
+    if filter_type == ZernikeFilter and tally.scores == ['flux'] and filter_.num_sides == 0:
+        zernike_flux_scores = tally
 
-    if tally.id == polygon_heat.id: polygon_heat_scores = tally
-    if tally.id == polygon_flux.id: polygon_flux_scores = tally
-
+    if filter_type == ZernikeFilter and tally.scores == ['kappa-fission'] and filter_.num_sides == 6:
+        polygon_heat_scores = tally
+    if filter_type == ZernikeFilter and tally.scores == ['flux'] and filter_.num_sides == 6:
+        polygon_flux_scores = tally
 
 ## mesh
+mesh_len = 40
+mesh_dimensions = (mesh_len, mesh_len)
+
 mesh_heat_scores.std_dev.shape = mesh_dimensions
 mesh_heat_scores.mean.shape = mesh_dimensions
 
@@ -38,6 +59,11 @@ plt.close()
 
 ## distribcell is something to as novak about
 
+
+## zernike params
+pellet_diameter = 5.5685 / 10
+pin_pitch = 1.180 * pellet_diameter
+polygon_radius = pin_pitch * 3**(0.5) * 10
 
 ## circular zernike
 zernike_heat_df = zernike_heat_scores.get_pandas_dataframe()
@@ -75,10 +101,6 @@ plt.close()
 ### parameters
 num_sides = 6
 alpha = np.pi / num_sides
-
-pellet_diameter = 5.5685 / 10
-pin_pitch = 1.180 * pellet_diameter
-polygon_radius = pin_pitch * 3**(0.5) * 10
 
 ### getting data
 polygon_heat_df = polygon_heat_scores.get_pandas_dataframe()
