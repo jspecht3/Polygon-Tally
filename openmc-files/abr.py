@@ -1,6 +1,7 @@
 import openmc
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 # materials
 ## depleted uranium
@@ -41,11 +42,11 @@ tru_lwr_sf.add_nuclide("Cm245", 0.04)
 ## metal core, using weapons grade Pu for core
 core = openmc.Material()
 
-#enrichment_tru = 15.5 / 100
-#enrichment_u = 1 - enrichment_tru
-
-enrichment_tru = 80 / 100
+enrichment_tru = 15.5 / 100
 enrichment_u = 1 - enrichment_tru
+
+#enrichment_tru = 80 / 100
+#enrichment_u = 1 - enrichment_tru
 
 ### uranium
 core.add_nuclide("U234", 0.001 * enrichment_u)#, "wo")
@@ -64,7 +65,6 @@ core.add_nuclide("Pu242", 0.02 * enrichment_tru)
 
 ### density
 core.set_density("g/cc", 20)
-
 
 ## fill
 na = openmc.Material()
@@ -109,6 +109,7 @@ colors = {
     water : "darkturquoise"
 }
 
+
 # geometry
 ## fuel assembly
 ### parameters
@@ -129,19 +130,22 @@ outer_surface = openmc.model.HexagonalPrism(
     edge_length = pin_cell_f2f / 3**(.5)
 )
 
-metal_cell = openmc.Cell(fill = tru_wg, region = -metal_or)
+metal_cell = openmc.Cell(fill = core, region = -metal_or)
 fill_cell = openmc.Cell(fill = na, region = +metal_or & -clad_ir)
 clad_cell = openmc.Cell(fill = ht9, region = +clad_ir & -clad_or)
 outer_cell = openmc.Cell(fill = na, region = -outer_surface)
 outer_fill = openmc.Cell(fill = na, region = +clad_or)
 
 fuel_pin = openmc.Universe(cells = [metal_cell, fill_cell, clad_cell, outer_fill])
+fuel_cell = openmc.Cell(fill = fuel_pin)
+fuel_pin = openmc.Universe(cells = [fuel_cell])
+
 fuel_pin_plot = openmc.Universe(cells = [metal_cell, fill_cell, clad_cell, outer_cell])
 
 ### plotting
 fuel_pin_plot.plot(color_by = "material", width = [1.1, 1.1], colors = colors)
-fuel_pin.plot(color_by = "material", width = [1.1, 1.1], colors = colors)
-plt.show()
+plt.savefig("geometry/fuel_pin.png", dpi=600)
+plt.close()
 
 ### assembly layers
 fuel_assembly = openmc.HexLattice()
@@ -166,6 +170,12 @@ outer_hex = openmc.model.HexagonalPrism(
 )
 
 fuel_assembly_cell = openmc.Cell(fill = fuel_assembly, region = -outer_hex)
+
+### plotting
+plot_univ = openmc.Universe(cells=[fuel_assembly_cell])
+plot_univ.plot(color_by = "material", width = [25 , 25], colors = colors)
+plt.savefig("geometry/fuel_assembly.png", dpi=600)
+plt.close()
 
 ## block of TRU
 rect_prism = openmc.model.RectangularPrism(
@@ -201,51 +211,101 @@ bounding_box = +left & -right & -front & +back
 bounding_cell = openmc.Cell(fill=water, region=bounding_box)
 
 ## entire assembly
+test_cylin = openmc.ZCylinder(0,0,polygon_radius)
+test_cell = openmc.Cell(fill = tru_wg, region = +test_cylin)
+
 univ = openmc.Universe(cells = [fuel_assembly_cell, tru_block, boron_cell1, boron_cell2, tru_cell1, tru_cell2, bounding_cell])
-#univ = openmc.Universe(cells = [fuel_assembly_cell, bounding_cell])
+#univ = openmc.Universe(cells = [fuel_assembly_cell, test_cell])
+univ.plot(color_by = 'material', width = [40, 40], colors=colors, pixels=100000)
+plt.savefig("geometry/geometry.png", dpi=600)
+plt.close()
 
 ## xml
 main_cell = openmc.Cell(fill = univ)
 geometry = openmc.Geometry([main_cell])
 geometry.export_to_xml()
 
+
 # settings
-point1 = openmc.stats.Point((0,0,0))
-#point1 = openmc.stats.Box((-19,-19,0),(19,19,0))
+#point1 = openmc.stats.Point((0,0,0))
+point1 = openmc.stats.Box((-19,-19,-1),(19,19,1))
 src1 = openmc.IndependentSource(space=point1)
 
 settings = openmc.Settings()
 settings.source = [src1]
-settings.particles = 1000
-settings.batches = 100
+settings.particles = 10000
+settings.batches = 1000
 settings.inactive = 50
 settings.export_to_xml()
 
+
 # tallies
-## mesh Tally
 tallies = openmc.Tallies()
 
-mesh_len = 1000
+## RegularMesh
+mesh_len = 40
 mesh_dimensions = (mesh_len,mesh_len)
-
-### mesh
 mesh = openmc.RegularMesh()
+
 size = 0.2
 mesh.lower_left = (-size, -size)
 mesh.upper_right = (size, size)
 mesh.dimension = mesh_dimensions
-mesh_filter = openmc.MeshFilter(mesh)
+mesh_filter = openmc.MeshFilter(mesh, filter_id=1)
 
-### different scores
-heat = openmc.Tally()
-heat.scores = ['kappa-fission']
-heat.filters = [mesh_filter]
+### mesh tallies
+mesh_heat = openmc.Tally()
+mesh_heat.scores = ['kappa-fission']
+mesh_heat.filters = [mesh_filter]
 
-flux = openmc.Tally()
-flux.scores = ['flux']
-flux.filters = [mesh_filter]
+mesh_flux = openmc.Tally()
+mesh_flux.scores = ['flux']
+mesh_flux.filters = [mesh_filter]
 
-### tally XML
-tallies.append(heat)
-tallies.append(flux)
+## DistribcellFilter
+distrib_filter = openmc.DistribcellFilter(fuel_cell)
+
+distrib_heat = openmc.Tally()
+distrib_heat.filters = [distrib_filter]
+distrib_heat.scores = ['kappa-fission']
+
+distrib_flux = openmc.Tally()
+distrib_flux.filters = [distrib_filter]
+distrib_flux.scores = ['flux']
+
+## ZernikeFilter
+zernike_filter = openmc.ZernikeFilter(order=15, r=polygon_radius)
+
+zernike_heat = openmc.Tally()
+zernike_heat.filters = [zernike_filter]
+zernike_heat.scores = ['kappa-fission']
+
+zernike_flux = openmc.Tally()
+zernike_flux.filters = [zernike_filter]
+zernike_flux.scores = ['flux']
+
+## Polygon Filter
+polygon_filter = openmc.ZernikeFilter(order=15, r=polygon_radius, num_sides=6)
+
+polygon_heat = openmc.Tally()
+polygon_heat.filters = [polygon_filter]
+polygon_heat.scores = ['kappa-fission']
+
+polygon_flux = openmc.Tally()
+polygon_flux.filters = [polygon_filter]
+polygon_flux.scores = ['flux']
+
+## constructing the entire thing
+tallies.append(mesh_heat)
+tallies.append(mesh_flux)
+
+tallies.append(distrib_heat)
+tallies.append(distrib_flux)
+
+tallies.append(zernike_heat)
+tallies.append(zernike_flux)
+
+tallies.append(polygon_heat)
+tallies.append(polygon_flux)
+
 tallies.export_to_xml()
