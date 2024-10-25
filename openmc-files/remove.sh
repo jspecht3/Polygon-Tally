@@ -1,1 +1,1 @@
-rm *.xml *.h5 *.out *.png
+rm *.xml *.h5 *.out 
