@@ -25,6 +25,7 @@ core.set_density("g/cc", 20)
 ## fill
 na = openmc.Material()
 na.add_element("Na", 100)
+na.set_density("g/cc", 0.971)
 
 ## HT9, clad
 ht9 = openmc.Material()
@@ -42,9 +43,13 @@ ht9.add_element("P", 0.003)
 ht9.add_element("N", 0.106)
 ht9.add_element("Fe", 84.529)
 
+ht9.set_density("g/cc", 6.551)
+
 ## helium
 he = openmc.Material()
 he.add_element("He", 1)
+
+he.set_density("g/cc", 0.166 / 1000)
 
 ## xml
 materials = openmc.Materials([core, na, ht9, he])
