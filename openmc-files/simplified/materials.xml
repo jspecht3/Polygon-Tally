@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<materials>
+  <material depletable="true" id="1">
+    <density units="sum"/>
+    <nuclide ao="100" name="Pu239"/>
+  </material>
+  <material id="2">
+    <density units="sum"/>
+    <nuclide ao="5.845000000000001" name="Fe54"/>
+    <nuclide ao="91.754" name="Fe56"/>
+    <nuclide ao="2.119" name="Fe57"/>
+    <nuclide ao="0.28200000000000003" name="Fe58"/>
+  </material>
+  <material id="3">
+    <density units="sum"/>
+    <nuclide ao="100.0" name="Na23"/>
+  </material>
+  <material id="4">
+    <density units="sum"/>
+    <nuclide ao="1.99968852" name="H1"/>
+    <nuclide ao="0.00031148" name="H2"/>
+    <nuclide ao="0.999621" name="O16"/>
+    <nuclide ao="0.000379" name="O17"/>
+  </material>
+</materials>

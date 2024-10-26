@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<geometry>
+  <cell id="1" material="4" region="-1" universe="1"/>
+  <cell id="2" material="5" region="1 -2" universe="1"/>
+  <cell id="3" material="6" region="2 -3" universe="1"/>
+  <cell id="5" material="5" region="3" universe="1"/>
+  <cell fill="1" id="6" universe="2"/>
+  <cell id="7" material="5" universe="5"/>
+  <cell fill="4" id="8" region="-10 11 -12 -13 14 15" universe="7"/>
+  <cell id="14" material="8" region="24 -25 -26 27 (10 | -11 | 12 | 13 | -14 | -15)" universe="7"/>
+  <cell fill="7" id="15" universe="8"/>
+  <hex_lattice id="4" n_rings="10">
+    <pitch>1.1381011407897808</pitch>
+    <outer>5</outer>
+    <center>0 0</center>
+    <universes>
+         2
+        2 2
+       2 2 2
+      2 2 2 2
+     2 2 2 2 2
+    2 2 2 2 2 2
+   2 2 2 2 2 2 2
+  2 2 2 2 2 2 2 2
+ 2 2 2 2 2 2 2 2 2
+2 2 2 2 2 2 2 2 2 2
+ 2 2 2 2 2 2 2 2 2
+2 2 2 2 2 2 2 2 2 2
+ 2 2 2 2 2 2 2 2 2
+2 2 2 2 2 2 2 2 2 2
+ 2 2 2 2 2 2 2 2 2
+2 2 2 2 2 2 2 2 2 2
+ 2 2 2 2 2 2 2 2 2
+2 2 2 2 2 2 2 2 2 2
+ 2 2 2 2 2 2 2 2 2
+2 2 2 2 2 2 2 2 2 2
+ 2 2 2 2 2 2 2 2 2
+2 2 2 2 2 2 2 2 2 2
+ 2 2 2 2 2 2 2 2 2
+2 2 2 2 2 2 2 2 2 2
+ 2 2 2 2 2 2 2 2 2
+2 2 2 2 2 2 2 2 2 2
+ 2 2 2 2 2 2 2 2 2
+2 2 2 2 2 2 2 2 2 2
+ 2 2 2 2 2 2 2 2 2
+  2 2 2 2 2 2 2 2
+   2 2 2 2 2 2 2
+    2 2 2 2 2 2
+     2 2 2 2 2
+      2 2 2 2
+       2 2 2
+        2 2
+         2</universes>
+  </hex_lattice>
+  <surface coeffs="0.0 0.0 0.27842500000000003" id="1" type="z-cylinder"/>
+  <surface coeffs="0.0 0.0 0.3215" id="2" type="z-cylinder"/>
+  <surface coeffs="0.0 0.0 0.3775" id="3" type="z-cylinder"/>
+  <surface coeffs="9.856245000000001" id="10" type="x-plane"/>
+  <surface coeffs="-9.856245000000001" id="11" type="x-plane"/>
+  <surface coeffs="0.5773502691896257 1.0 0.0 11.381011407897807" id="12" type="plane"/>
+  <surface coeffs="-0.5773502691896257 1.0 0.0 11.381011407897807" id="13" type="plane"/>
+  <surface coeffs="-0.5773502691896257 1.0 0.0 -11.381011407897807" id="14" type="plane"/>
+  <surface coeffs="0.5773502691896257 1.0 0.0 -11.381011407897807" id="15" type="plane"/>
+  <surface boundary="vacuum" coeffs="-20" id="24" type="y-plane"/>
+  <surface boundary="vacuum" coeffs="20" id="25" type="y-plane"/>
+  <surface boundary="vacuum" coeffs="20" id="26" type="x-plane"/>
+  <surface boundary="vacuum" coeffs="-20" id="27" type="x-plane"/>
+</geometry>
