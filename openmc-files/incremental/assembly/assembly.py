@@ -79,9 +79,9 @@ pin_hex = openmc.model.HexagonalPrism(
         edge_length = pin_cell_f2f * 3**(-0.5))
 
 fuel_cell = openmc.Cell(fill = core, region = -fuel_or) 
-gap_cell = openmc.Cell(fill = he, region = +fuel_or & -clad_ir)
+gap_cell = openmc.Cell(fill = na, region = +fuel_or & -clad_ir)
 clad_cell = openmc.Cell(fill = ht9, region = +clad_ir & -clad_or)
-outer_cell = openmc.Cell(fill = he, region = +clad_or)
+outer_cell = openmc.Cell(fill = na, region = +clad_or)
 
 pin_cell = openmc.Cell(
         fill = openmc.Universe(
@@ -115,7 +115,7 @@ polygon_radius = pin_pitch * 10 * 3**(0.5)
 outer_hex = openmc.model.HexagonalPrism(
         edge_length = polygon_radius,
         orientation = 'y',
-        boundary_type = "vacuum")
+        boundary_type = "reflective")
 
 assembly_cell = openmc.Cell(fill = assembly_hex, region = -outer_hex)
 
