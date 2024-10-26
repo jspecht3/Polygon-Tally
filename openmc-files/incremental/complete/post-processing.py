@@ -17,16 +17,20 @@ with open('transfer.csv', newline='') as file:
             polygon_radius = float(row[1])
 
 # statepoint
-sp = openmc.StatePoint('statepoint.500.h5')
+sp = openmc.StatePoint('statepoint.5000.h5')
 
 mesh_tally = sp.tallies[1]
 zern_tally = sp.tallies[2]
+poly_tally = sp.tallies[3]
 
 mesh_fission = mesh_tally.get_slice(scores=['kappa-fission'])
 mesh_flux = mesh_tally.get_slice(scores=['flux'])
 
 zern_fission = zern_tally.get_slice(scores=['kappa-fission'])
 zern_flux = zern_tally.get_slice(scores=['flux'])
+
+poly_fission = poly_tally.get_slice(scores=['kappa-fission'])
+poly_flux = poly_tally.get_slice(scores=['flux'])
 
 mesh_fission.mean.shape = mesh_dimensions
 mesh_flux.mean.shape = mesh_dimensions
@@ -50,12 +54,8 @@ zern_flux_df = zern_flux.get_pandas_dataframe()
 zern_fission_n = zern_fission_df['mean']
 zern_flux_n = zern_flux_df['mean']
 
-zern_fission_zs = openmc.Zernike(
-        zern_fission_n,
-        radius = polygon_radius)
-zern_flux_zs = openmc.Zernike(
-        zern_flux_n,
-        radius = polygon_radius)
+zern_fission_zs = openmc.Zernike(zern_fission_n, radius = polygon_radius)
+zern_flux_zs = openmc.Zernike(zern_flux_n, radius = polygon_radius)
 
 azimuths = np.linspace(0, 2*np.pi, 100)
 zeniths = np.linspace(0, polygon_radius, 100)
@@ -73,4 +73,39 @@ plt.close()
 fig, ax = plt.subplots(subplot_kw = dict(projection="polar"))
 plot = ax.contourf(theta, r, z_flux)
 plt.savefig("zernike-flux.png", dpi=600)
+plt.close()
+
+## polygon
+poly_fission_df = poly_fission.get_pandas_dataframe()
+poly_flux_df = poly_flux.get_pandas_dataframe()
+
+poly_fission_n = poly_fission_df['mean']
+poly_flux_n = poly_flux_df['mean']
+
+poly_fission_zs = openmc.Zernike(poly_fission_n, radius = polygon_radius)
+poly_flux_zs = openmc.Zernike(poly_flux_n, radius = polygon_radius)
+
+num_sides = 6
+alpha = np.pi / num_sides
+
+def r_alpha(theta):
+    drop = (theta + alpha) / (2 * alpha)
+    u_alpha = theta - drop.astype(int) * (2 * alpha)
+    return polygon_radius * np.cos(alpha) / np.cos(u_alpha)
+
+var_radius = r_alpha(theta)
+rp = r * var_radius / polygon_radius
+
+k_fission = poly_fission_zs(zeniths, azimuths)
+k_flux = poly_flux_zs(zeniths, azimuths)
+
+### plotting
+fig, ax = plt.subplots(subplot_kw = dict(projection="polar"))
+plot = ax.contourf(theta, rp, k_fission)
+plt.savefig("polygon-kappa-fission.png", dpi=600)
+plt.close()
+
+fig, ax = plt.subplots(subplot_kw = dict(projection="polar"))
+plot = ax.contourf(theta, rp, k_flux)
+plt.savefig("polygon-flux.png", dpi=600)
 plt.close()

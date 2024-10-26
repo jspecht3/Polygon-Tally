@@ -214,8 +214,8 @@ src = openmc.IndependentSource(space = source)
 settings.soruce = [src]
 
 settings.particles = 1000
-settings.batches = 500
-settings.inactive = 250
+settings.batches = 5000
+settings.inactive = 2500
 
 #settings.export_to_xml()
 
@@ -254,6 +254,19 @@ zernike_tally.filters = [zernike_filter]
 zernike_tally.scores = ['kappa-fission', 'flux']
 
 tallies.append(zernike_tally)
+
+## polygon zernike
+polygon_filter = openmc.ZernikeFilter(
+        order=15,
+        r = polygon_radius,
+        num_sides = 6
+)
+
+polygon_tally = openmc.Tally()
+polygon_tally.filters = [polygon_filter]
+polygon_tally.scores = ['kappa-fission', 'flux']
+
+tallies.append(polygon_tally)
 
 # model
 model = openmc.Model(
