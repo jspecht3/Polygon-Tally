@@ -25,6 +25,7 @@ core.set_density("g/cc", 20)
 ## fill
 na = openmc.Material()
 na.add_element("Na", 100)
+na.set_density("g/cc", 0.971)
 
 ## HT9, clad
 ht9 = openmc.Material()
@@ -42,9 +43,13 @@ ht9.add_element("P", 0.003)
 ht9.add_element("N", 0.106)
 ht9.add_element("Fe", 84.529)
 
+ht9.set_density("g/cc", 6.551)
+
 ## helium
 he = openmc.Material()
 he.add_element("He", 1)
+
+he.set_density("g/cc", 0.166 / 1000)
 
 ## xml
 materials = openmc.Materials([core, na, ht9, he])
@@ -79,9 +84,9 @@ pin_hex = openmc.model.HexagonalPrism(
         edge_length = pin_cell_f2f * 3**(-0.5))
 
 fuel_cell = openmc.Cell(fill = core, region = -fuel_or) 
-gap_cell = openmc.Cell(fill = he, region = +fuel_or & -clad_ir)
+gap_cell = openmc.Cell(fill = na, region = +fuel_or & -clad_ir)
 clad_cell = openmc.Cell(fill = ht9, region = +clad_ir & -clad_or)
-outer_cell = openmc.Cell(fill = he, region = +clad_or)
+outer_cell = openmc.Cell(fill = na, region = +clad_or)
 
 pin_cell = openmc.Cell(
         fill = openmc.Universe(
@@ -115,7 +120,7 @@ polygon_radius = pin_pitch * 10 * 3**(0.5)
 outer_hex = openmc.model.HexagonalPrism(
         edge_length = polygon_radius,
         orientation = 'y',
-        boundary_type = "vacuum")
+        boundary_type = "reflective")
 
 assembly_cell = openmc.Cell(fill = assembly_hex, region = -outer_hex)
 
