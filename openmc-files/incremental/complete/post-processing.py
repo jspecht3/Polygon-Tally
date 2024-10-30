@@ -17,7 +17,7 @@ with open('transfer.csv', newline='') as file:
             polygon_radius = float(row[1])
 
 # statepoint
-sp = openmc.StatePoint('statepoint.5000.h5')
+sp = openmc.StatePoint('statepoint.10000.h5')
 
 mesh_tally = sp.tallies[1]
 zern_tally = sp.tallies[2]
@@ -62,16 +62,21 @@ zeniths = np.linspace(0, polygon_radius, 100)
 r,theta = np.meshgrid(zeniths, azimuths)
 
 z_fission = zern_fission_zs(zeniths, azimuths)
+for i in range(len(z_fission)):
+    for j in range(len(z_fission[i])):
+        z_fission[i][j] /= 1e7
 z_flux = zern_flux_zs(zeniths, azimuths)
 
 ### plotting
 fig, ax = plt.subplots(subplot_kw = dict(projection="polar"))
-plot = ax.contourf(theta, r, z_fission)
+plot = ax.contourf(theta, r, z_fission, cmap="brg")
+fig.colorbar(plot, pad=0.075)
 plt.savefig("zernike-kappa-fission.png", dpi=600)
 plt.close()
 
 fig, ax = plt.subplots(subplot_kw = dict(projection="polar"))
-plot = ax.contourf(theta, r, z_flux)
+plot = ax.contourf(theta, r, z_flux, cmap="brg")
+fig.colorbar(plot, pad=0.075)
 plt.savefig("zernike-flux.png", dpi=600)
 plt.close()
 
@@ -97,15 +102,20 @@ var_radius = r_alpha(theta)
 rp = r * var_radius / polygon_radius
 
 k_fission = poly_fission_zs(zeniths, azimuths)
+for i in range(len(k_fission)):
+    for j in range(len(k_fission[i])):
+        k_fission[i][j] /= 1e7
 k_flux = poly_flux_zs(zeniths, azimuths)
 
 ### plotting
 fig, ax = plt.subplots(subplot_kw = dict(projection="polar"))
-plot = ax.contourf(theta, rp, k_fission)
+plot = ax.contourf(theta, rp, k_fission, cmap='brg')
+fig.colorbar(plot, pad=0.075)
 plt.savefig("polygon-kappa-fission.png", dpi=600)
 plt.close()
 
 fig, ax = plt.subplots(subplot_kw = dict(projection="polar"))
-plot = ax.contourf(theta, rp, k_flux)
+plot = ax.contourf(theta, rp, k_flux, cmap='brg')
+fig.colorbar(plot, pad=0.075)
 plt.savefig("polygon-flux.png", dpi=600)
 plt.close()
