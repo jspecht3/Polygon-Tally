@@ -69,13 +69,13 @@ z_flux = zern_flux_zs(zeniths, azimuths)
 
 ### plotting
 fig, ax = plt.subplots(subplot_kw = dict(projection="polar"))
-plot = ax.contourf(theta, r, z_fission, cmap="brg")
+plot = ax.contourf(theta, r, z_fission, cmap="coolwarm", vmin=-0.005, vmax=0.021)
 fig.colorbar(plot, pad=0.075)
 plt.savefig("zernike-kappa-fission.png", dpi=600)
 plt.close()
 
 fig, ax = plt.subplots(subplot_kw = dict(projection="polar"))
-plot = ax.contourf(theta, r, z_flux, cmap="brg")
+plot = ax.contourf(theta, r, z_flux, cmap="coolwarm", vmin=-0.005, vmax=0.021)
 fig.colorbar(plot, pad=0.075)
 plt.savefig("zernike-flux.png", dpi=600)
 plt.close()
@@ -109,13 +109,13 @@ k_flux = poly_flux_zs(zeniths, azimuths)
 
 ### plotting
 fig, ax = plt.subplots(subplot_kw = dict(projection="polar"))
-plot = ax.contourf(theta, rp, k_fission, cmap='brg')
+plot = ax.contourf(theta, rp, k_fission, cmap='coolwarm', vmin=-0.005, vmax=0.021)
 fig.colorbar(plot, pad=0.075)
 plt.savefig("polygon-kappa-fission.png", dpi=600)
 plt.close()
 
 fig, ax = plt.subplots(subplot_kw = dict(projection="polar"))
-plot = ax.contourf(theta, rp, k_flux, cmap='brg')
+plot = ax.contourf(theta, rp, k_flux, cmap='coolwarm', vmin=-0.005, vmax=0.021)
 fig.colorbar(plot, pad=0.075)
 plt.savefig("polygon-flux.png", dpi=600)
 plt.close()
