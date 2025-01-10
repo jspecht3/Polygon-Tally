@@ -35,5 +35,6 @@ for ring in cs:
 
 plt.xlim(-11, 11)
 plt.ylim(-12, 12)
+plt.colorbar(sm, ax=ax)
 
 plt.show()

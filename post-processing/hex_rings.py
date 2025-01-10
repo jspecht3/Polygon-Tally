@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 pellet_diameter = 5.5685 / 10
 pin_pitch = 1.180 * pellet_diameter
 pitch = pin_pitch * 3**(0.5)
+radius = pitch / 2 / np.cos(np.radians(30))
 
 
 def next1(ring):
