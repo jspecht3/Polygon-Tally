@@ -51,4 +51,6 @@ print(count)
 for coord in coords:
     x, y = coord
     plt.scatter(x, y, color='k')
+
+plt.savefig("quadrature-set.png", dpi=600)
 plt.show()

@@ -267,7 +267,7 @@ class ZernikeParent:
         """
         r = (x**2 + y**2)**(1/2)
         theta = np.arctan2(y,x) + (2 * np.pi * (y < 0))
-        
+
         return r, theta
 
 
