@@ -213,8 +213,8 @@ source = openmc.stats.Box(
 src = openmc.IndependentSource(space = source)
 settings.soruce = [src]
 
-settings.particles = 1000
-settings.batches = 5000
+settings.particles = 10000
+settings.batches = 10000
 settings.inactive = 2500
 
 #settings.export_to_xml()

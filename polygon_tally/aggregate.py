@@ -57,8 +57,8 @@ class ApproxParent():
         
         if name != '' :
             plt.savefig(name, dpi = 600)
-        plt.close('all')
-
+        #plt.close('all')
+        plt.show()
 
 class ZApprox(ApproxParent):
 
