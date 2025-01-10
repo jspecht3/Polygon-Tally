@@ -20,7 +20,7 @@ def calc_weights(func, dx):
     values = {}
     num_quad = 0
 
-    area = 6 * polygon_radius**2 * np.cos(np.pi / 6) * np.sin(np.pi / 6)
+    area = 6 * radius**2 * np.cos(np.pi / 6) * np.sin(np.pi / 6)
 
     for ring in cs:
         values[ring] = []
@@ -63,5 +63,15 @@ def calc_weights(func, dx):
 
     return values, min, max
 
-print(6 * polygon_radius**2 * np.cos(np.pi / 6) * np.sin(np.pi / 6))
-print(polygon_radius / 2)
+
+def area_calc(radius):
+    return 6 * radius**2 * np.cos(np.pi / 6) * np.sin(np.pi / 6)
+
+
+def print_areas():
+    print(f"Little Hex Area: {area_calc(radius)}")
+    print(f"Big Hex Area: {area_calc(polygon_radius)}")
+    print(f"Big Circle Area: {np.pi * polygon_radius**2}")
+
+
+# print_areas()

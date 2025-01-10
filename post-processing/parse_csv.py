@@ -77,3 +77,15 @@ for ring in flux_dict:
 
     for i in range(cell_count):
         flux_vals[ring].append(flux_dict[ring][i])
+
+
+def count_pins():
+    count = 0
+    for ring in flux_vals:
+        for cell in flux_vals[ring]:
+            count += 1
+    print(f"Total of {count} pins")
+    return
+
+
+# count_pins()

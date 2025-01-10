@@ -85,3 +85,57 @@ def poly_flux_xy(x, y):
     var_radius = r_alpha(theta)
     rho = r / var_radius
     return poly_flux_zs(rho, theta) * np.pi
+
+
+def integrate_circle(func, ms):
+    r = np.linspace(0, polygon_radius, ms)
+    theta = np.linspace(0, 2 * np.pi, ms)
+
+    r, theta = np.meshgrid(r, theta)
+
+    dr = r[:, 1]
+    _, dr = np.meshgrid(dr, dr)
+    dtheta = theta[1, 1]
+
+    x = r * np.cos(theta)
+    y = r * np.sin(theta)
+
+    integral = 0
+    for xi, yi, ri, dri in zip(x, y, r, dr):
+        integral += func(xi, yi) * ri * dri * dtheta
+    print(f"Integral of circle {func.__name__} is {integral}")
+    return
+
+
+def integrate_hex(func, radius, ms):
+    pitch = 2 * radius * np.cos(np.degrees(30))
+    h = pitch / 2
+
+    ys = np.linspace(-h, h, ms)
+    n = len(ys)
+    dy = y[1] - y[0]
+
+    def get_xs(y):
+        xr = radius - (radius * abs(y) / 2 / h)
+        xl = - radius + (radius * abs(y) / 2 / h)
+
+        m = abs(int(n * (1 - abs(y) / 2 / h)))
+        xs = np.linspace(xl, xr, m)
+        dx = xs[1] - xs[0]
+        return xs, dx
+
+        integral = 0
+        for y in ys:
+            xs, dx = gen_xs(y)
+            for x in xs:
+                integral += func(x, y) * dx * dy
+
+
+def unity(x, y):
+    return 1
+
+
+# integrate_circle(unity, 10000)
+
+integrate_circle(zern_flux_xy, 5000)
+integrate_circle(zern_fission_xy, 5000)
