@@ -4,12 +4,14 @@ import matplotlib as mpl
 from matplotlib.cm import ScalarMappable
 from matplotlib import patches as mp
 from hex_rings import cs, pitch
+from calculating_weights import values, max, min
 
 # dimesions
 radius = pitch / 2 / np.cos(np.radians(30))
 
 # plotting
-bounds = [0.00298973, 0.0172874]
+# bounds = [0.00298973, 0.0172874]
+bounds = [min, max]
 diff = bounds[1] - bounds[0]
 
 cmap = mpl.colormaps['viridis']
@@ -26,16 +28,18 @@ fig, ax = plt.subplots()
 ax.set_aspect('equal')
 
 for ring in cs:
-    for cell in cs[ring]:
-        x, y = cell
-        color = cmap(norm(random()))
+    for cell_num in range(len(cs[ring])):
+        x, y = cs[ring][cell_num]
+        # color = cmap(norm(random()))
+        weight = values[ring][cell_num]
+        color = cmap(norm(weight))
         polygon = mp.RegularPolygon((x, y), 6, radius=radius,
-                                    orientation=np.pi/2, color=color, ec='r')
+                                    orientation=np.pi/2, color=color)
         ax.add_artist(polygon)
 
 plt.xlim(-11, 11)
 plt.ylim(-12, 12)
 plt.colorbar(sm, ax=ax)
 
-plt.savefig("plot-hex.png", dpi=600)
+plt.savefig("poly-flux-hex.png", dpi=600)
 plt.show()

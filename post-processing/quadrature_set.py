@@ -39,7 +39,7 @@ def quad_set(center, dx):
 
 # plotting
 def plotter():
-    center = np.array([-10, -10])
+    center = np.array([0, 10])
 
     fig, ax = plt.subplots()
     ax.set_aspect('equal')
@@ -56,5 +56,5 @@ def plotter():
     plt.savefig("quadrature-set.png", dpi=600)
     plt.show()
 
-plotter()
+# plotter()
 # print(radius, h)
