@@ -1,4 +1,5 @@
-from functions import (zern_fission_xy, zern_flux_xy, poly_fission_xy,
+# from functions import (zern_fission_xy, zern_flux_xy, poly_fission_xy,
+from max_error import (zern_fission_xy, zern_flux_xy, poly_fission_xy,
 poly_flux_xy, polygon_radius)
 from quadrature_set import quad_set, plotter
 from hex_rings import cs, radius

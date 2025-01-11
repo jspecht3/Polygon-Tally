@@ -158,10 +158,15 @@ def plot_diffs(func, dx):
     sm = ScalarMappable(norm=norm, cmap=cmap)
     sm.set_array([])
 
+    max_diff = 0
+    avg_diff = 0
     for ring in cs:
         for cell_num in range(len(cs[ring])):
             x, y = cs[ring][cell_num]
             weight = diff[ring][cell_num]
+            avg_diff += weight
+            if weight > max_diff:
+                max_diff = weight
             color = cmap(norm(weight))
             polygon = mp.RegularPolygon((x, y), 6, radius=radius,
                                         orientation=np.pi/2, color=color)
@@ -173,6 +178,10 @@ def plot_diffs(func, dx):
 
     plt.savefig(f"plots/diffs/{tally_type}-{qoi}.png", dpi=600)
     plt.close()
+
+    print(f"----- {qoi} {tally_type} -----")
+    print(f"max difference : {max_diff}")
+    print(f"avg difference : {avg_diff / 271}")
 
 
 def plot_all_func(dx):

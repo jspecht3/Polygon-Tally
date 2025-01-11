@@ -45,6 +45,49 @@ poly_flux_n = poly_flux_df['mean']
 poly_flux_zs = openmc.Zernike(poly_flux_n, radius=1)
 
 
+# error funcs
+def get_rel_err(df):
+    mean = df['mean']
+    std = df['std. dev.']
+    err = np.array(std / mean)
+
+    bps = []
+    count = 0
+    for i in range(16):
+        count += 1 + i
+        bps.append(count)
+
+    n_group = [[err[0]]]
+    for i in range(1, 16):
+        left = bps[i - 1]
+        right = bps[i]
+        n_group.append(err[left: right])
+
+    rel_err = []
+    for group in n_group:
+        glip = 0
+        for m_coeff in group:
+            glip += m_coeff
+        rel_err.append(m_coeff)
+
+    return abs(np.array(rel_err))
+
+
+zern_fission_err = get_rel_err(zern_fission_df)
+zern_flux_err = get_rel_err(zern_flux_df)
+poly_fission_err = get_rel_err(poly_fission_df)
+poly_flux_err = get_rel_err(poly_flux_df)
+
+# plt.semilogy(zern_fission_err, label='zern, fission', marker='o')
+# plt.semilogy(zern_flux_err, label='zern, flux', marker='s')
+# plt.semilogy(poly_fission_err, label='poly, fission', marker='^')
+# plt.semilogy(poly_flux_err, label='poly, flux', marker='x')
+
+# plt.legend()
+# plt.grid('both')
+# plt.savefig("./err-next-term.png", dpi=600)
+# plt.show()
+
 # functions for zern tally
 def zern_fission_xy(x, y):
     r = (x**2 + y**2)**(1/2) / polygon_radius
@@ -151,35 +194,3 @@ def unity(x, y):
 
 # integrate_hex(poly_flux_xy, polygon_radius, 100)
 # integrate_hex(poly_fission_xy, polygon_radius, 100)
-
-
-def fail():
-    rho = np.linspace(0, 1, 100)
-    phi = np.linspace(0, 1, 100)
-    rho, phi = np.meshgrid(rho, phi)
-
-    var_rad = r_alpha(phi)
-    r = rho * var_rad
-    theta = phi
-
-    x = r * np.cos(theta)
-    y = r * np.sin(theta)
-
-    f = np.ones_like(x) * 100
-
-    fig, ax = plt.subplots()
-    # ax.contour(x, y, f)
-    for xi, yi in zip(x, y):
-        plt.scatter(x, y)
-
-    plt.show()
-
-    print(x, y, f)
-
-
-# pitch = 2 * radius * np.cos(np.radians(30))
-#h = pitch / 2
-#q = radius * np.sin(np.radians(30))
-#ms = 100
-
-#xs = np.linspace(-h 
