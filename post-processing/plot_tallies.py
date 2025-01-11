@@ -18,22 +18,34 @@ def plot_func(func, dx):
     values, min, max = calc_weights(func, dx)
     tally_type, qoi, _ = func.__name__.split('_')
 
-    bounds = [min, max]
+    total = 0
+    for ring in cs:
+        for cell_num in range(len(cs[ring])):
+            x, y = cs[ring][cell_num]
+            # color = cmap(norm(random()))
+            total += values[ring][cell_num]
+
+    # bounds = [min / total, max / total]
     # diff = bounds[1] - bounds[0]
+
+    if qoi == "fission":
+        bounds = [0, 0.018]
+    if qoi == "flux":
+        bounds = [0, 0.009]
+
+    fig, ax = plt.subplots()
+    ax.set_aspect('equal')
 
     cmap = mpl.colormaps['viridis']
     norm = mpl.colors.Normalize(bounds[0], bounds[1])
     sm = ScalarMappable(norm=norm, cmap=cmap)
     sm.set_array([])
 
-    fig, ax = plt.subplots()
-    ax.set_aspect('equal')
-
     for ring in cs:
         for cell_num in range(len(cs[ring])):
             x, y = cs[ring][cell_num]
             # color = cmap(norm(random()))
-            weight = values[ring][cell_num]
+            weight = values[ring][cell_num] / total
             color = cmap(norm(weight))
             polygon = mp.RegularPolygon((x, y), 6, radius=radius,
                                         orientation=np.pi/2, color=color)
@@ -47,34 +59,38 @@ def plot_func(func, dx):
     plt.close()
 
 
-# plotting the difference
-def plot_diff_abs(func, dx):
-    values, _, _ = calc_weights(func, dx)
-    tally_type, qoi, _ = func.__name__.split('_')
-
+# plotting csv
+def plot_csv(qoi):
     if qoi == "flux":
-        parsed = flux_vals
+        parsed = flux_vals.copy()
     if qoi == "fission":
-        parsed = fission_vals
+        parsed = fission_vals.copy()
 
-    diffs = {}
     max = -1e10
     min = 1e10
-    for ring in values:
-        diffs[ring] = []
-        for cell_num in range(len(values[ring])):
-            diff = abs(values[ring][cell_num] - parsed[ring][cell_num]) 
-            if diff > max:
-                max = diff
-            if diff < min:
-                min = diff
-            diffs[ring].append(diff)
+    total = 0
+    for ring in parsed:
+        for cell_num in range(len(parsed[ring])):
+            total += parsed[ring][cell_num]
 
-    if qoi == 'fission':
-        bounds = [0, 0.005]
-    if qoi == 'flux':
-        bounds = [0, 3e9]
+    for ring in parsed:
+        for cell_num in range(len(parsed[ring])):
+            weight = parsed[ring][cell_num]
+            if weight / total > max:
+                max = weight / total
+            if weight / total < min:
+                min = weight / total
+
+#    if qoi == 'fission':
+#        bounds = [0, 0.005]
+#    if qoi == 'flux':
+#        bounds = [0, 3e9]
 #    bounds = [min, max]
+
+    if qoi == "fission":
+        bounds = [0, 0.018]
+    if qoi == "flux":
+        bounds = [0, 0.009]
 
     cmap = mpl.colormaps['viridis']
     norm = mpl.colors.Normalize(bounds[0], bounds[1])
@@ -87,7 +103,7 @@ def plot_diff_abs(func, dx):
     for ring in cs:
         for cell_num in range(len(cs[ring])):
             x, y = cs[ring][cell_num]
-            weight = diffs[ring][cell_num]
+            weight = parsed[ring][cell_num] / total
             color = cmap(norm(weight))
             polygon = mp.RegularPolygon((x, y), 6, radius=radius,
                                         orientation=np.pi/2, color=color)
@@ -97,50 +113,55 @@ def plot_diff_abs(func, dx):
     plt.ylim(-12, 12)
     plt.colorbar(sm, ax=ax)
 
-    plt.savefig(f"plots/abs/{tally_type}-{qoi}-abs-diff.png", dpi=600)
+    plt.savefig(f"plots/{qoi}-csv.png", dpi=600)
     plt.close()
 
 
-def plot_diff_rel(func, dx):
-    values, _, _ = calc_weights(func, dx)
+def plot_diffs(func, dx):
+    values, min, max = calc_weights(func, dx)
     tally_type, qoi, _ = func.__name__.split('_')
 
     if qoi == "flux":
-        parsed = flux_vals
+        parsed = flux_vals.copy()
+        bounds = [0, 0.001]
     if qoi == "fission":
-        parsed = fission_vals
+        parsed = fission_vals.copy()
+        bounds = [0, 0.005]
+    elif qoi != "flux" and qoi != "fission":
+        raise ValueError(f"{qoi}")
 
-    diffs = {}
-    max = -1e10
-    min = 1e10
-    for ring in values:
-        diffs[ring] = []
-        for cell_num in range(len(values[ring])):
-            diff = abs((values[ring][cell_num] - parsed[ring][cell_num]) / parsed[ring][cell_num])
-            if diff > max:
-                max = diff
-            if diff < min:
-                min = diff
-            diffs[ring].append(diff)
+    total1 = 0
+    total2 = 0
+    for ring in cs:
+        for cell_num in range(len(cs[ring])):
+            total1 += values[ring][cell_num]
+            total2 += parsed[ring][cell_num]
 
-    if qoi == 'fission':
-        bounds = [0, 1.4]
-    if qoi == 'flux':
-        bounds = [0, 0.25]
-#    bounds = [min, max]
+    for ring in cs:
+        for cell_num in range(len(cs[ring])):
+            values[ring][cell_num] /= total1
+            parsed[ring][cell_num] /= total2
+
+    diff = {}
+    for ring in parsed:
+        diff[ring] = []
+        for cell_num in range(len(parsed[ring])):
+            vle = values[ring][cell_num]
+            psd = parsed[ring][cell_num]
+            diff[ring].append(abs(vle - psd))
+
+    fig, ax = plt.subplots()
+    ax.set_aspect('equal')
 
     cmap = mpl.colormaps['viridis']
     norm = mpl.colors.Normalize(bounds[0], bounds[1])
     sm = ScalarMappable(norm=norm, cmap=cmap)
     sm.set_array([])
 
-    fig, ax = plt.subplots()
-    ax.set_aspect('equal')
-
     for ring in cs:
         for cell_num in range(len(cs[ring])):
             x, y = cs[ring][cell_num]
-            weight = diffs[ring][cell_num]
+            weight = diff[ring][cell_num]
             color = cmap(norm(weight))
             polygon = mp.RegularPolygon((x, y), 6, radius=radius,
                                         orientation=np.pi/2, color=color)
@@ -150,7 +171,7 @@ def plot_diff_rel(func, dx):
     plt.ylim(-12, 12)
     plt.colorbar(sm, ax=ax)
 
-    plt.savefig(f"plots/rel/{tally_type}-{qoi}-rel-diff.png", dpi=600)
+    plt.savefig(f"plots/diffs/{tally_type}-{qoi}.png", dpi=600)
     plt.close()
 
 
@@ -161,20 +182,18 @@ def plot_all_func(dx):
     plot_func(poly_flux_xy, dx)
 
 
-def plot_all_diff_abs(dx):
-    plot_diff_abs(zern_fission_xy, dx)
-    plot_diff_abs(zern_flux_xy, dx)
-    plot_diff_abs(poly_fission_xy, dx)
-    plot_diff_abs(poly_flux_xy, dx)
+def plot_all_csv():
+    plot_csv('fission')
+    plot_csv('flux')
 
 
-def plot_all_diff_rel(dx):
-#    plot_diff_rel(zern_fission_xy, dx)
-    plot_diff_rel(zern_flux_xy, dx)
-#    plot_diff_rel(poly_fission_xy, dx)
-    plot_diff_rel(poly_flux_xy, dx)
+def plot_all_diffs(dx):
+    plot_diffs(zern_fission_xy, dx)
+    plot_diffs(zern_flux_xy, dx)
+    plot_diffs(poly_fission_xy, dx)
+    plot_diffs(poly_flux_xy, dx)
 
 
-# plot_all_func(0.03)
-# plot_all_diff_abs(0.04)
-plot_all_diff_rel(0.04)
+# plot_all_func(0.04)
+# plot_all_csv()
+plot_all_diffs(0.04)

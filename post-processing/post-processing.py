@@ -44,7 +44,7 @@ cmap = mpl.colormaps['viridis']
 bz1 = [np.min(z_fission), np.max(z_fission)]
 bz2 = [np.min(z_flux), np.max(z_flux)]
 
-nz1 = mpl.colors.Normalize(bz1[0], bz1[1])
+nz1 = mpl.colors.Normalize(bz1[0], bz1[1] * 0.8)
 nz2 = mpl.colors.Normalize(bz2[0], bz2[1])
 
 smz1 = ScalarMappable(norm=nz1, cmap=cmap)
@@ -86,14 +86,23 @@ rp = r * var_radius / polygon_radius
 k_fission = poly_fission_zs(zeniths, azimuths)
 k_flux = poly_flux_zs(zeniths, azimuths)
 
+bp1 = [np.min(k_fission), np.max(k_fission)]
+bp2 = [np.min(k_flux), np.max(k_flux)]
+
+np1 = mpl.colors.Normalize(bz1[0], bz1[1])
+np2 = mpl.colors.Normalize(bz2[0], bz2[1])
+
+smp1 = ScalarMappable(norm=nz1, cmap=cmap)
+smp2 = ScalarMappable(norm=nz2, cmap=cmap)
+
 fig, ax = plt.subplots(subplot_kw = dict(projection="polar"))
 plot = ax.contourf(theta, rp, k_fission, levels=1000)
-plt.colorbar(smz1, ax=ax)
+plt.colorbar(smp1, ax=ax)
 plt.savefig("polygon-kappa-fission.png", dpi=600)
 plt.close()
 
 fig, ax = plt.subplots(subplot_kw = dict(projection="polar"))
 plot = ax.contourf(theta, rp, k_flux, levels=1000)
-plt.colorbar(smz2, ax=ax)
+plt.colorbar(smp2, ax=ax)
 plt.savefig("polygon-flux.png", dpi=600)
 plt.close()

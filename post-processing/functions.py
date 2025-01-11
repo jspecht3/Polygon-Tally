@@ -177,9 +177,9 @@ def fail():
     print(x, y, f)
 
 
-pitch = 2 * radius * np.cos(np.radians(30))
-h = pitch / 2
-q = radius * np.sin(np.radians(30))
-ms = 100
+# pitch = 2 * radius * np.cos(np.radians(30))
+#h = pitch / 2
+#q = radius * np.sin(np.radians(30))
+#ms = 100
 
-xs = np.linspace(-h 
+#xs = np.linspace(-h 

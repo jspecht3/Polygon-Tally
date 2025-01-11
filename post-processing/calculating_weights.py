@@ -9,12 +9,14 @@ import time
 def calc_weights(func, dx):
     tally_type, qoi, _ = func.__name__.split('_')
 
-    if qoi == "fission":
-        normalizer = 12826935.117376836
-    if qoi == "flux":
-        normalizer = 2.0552252049066863e-12
-    if qoi != "fission" and qoi != "flux":
-        raise ValueError("put the fission or flux in the bag lil bro")
+    if tally_type == "zern" and qoi == "fission":
+        normalizer = 1645920829.5520897 / 1.1219273470065219
+    if tally_type == "zern" and qoi == "flux":
+        normalizer = 1645920829.5520897 * 1 / 1.602e-19 / 1.1219273470065219
+    if tally_type == "poly" and qoi == "fission":
+        normalizer = 1645920829.5520897 / 1.1219273470065219
+    if tally_type == "poly" and qoi == "flux":
+        normalizer = 1645920829.5520897 * 1 / 1.602e-19 / 1.1219273470065219
 
     t0 = time.time()
     values = {}
@@ -34,7 +36,7 @@ def calc_weights(func, dx):
             for quad_point in quad_points:
                 value += func(quad_point[0], quad_point[1])
 
-            values[ring].append(value / count / area / normalizer)
+            values[ring].append(value / count / area * normalizer)
             num_quad = count
 
     max = 1e-100
