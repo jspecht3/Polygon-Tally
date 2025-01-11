@@ -44,13 +44,16 @@ cmap = mpl.colormaps['viridis']
 bz1 = [np.min(z_fission), np.max(z_fission)]
 bz2 = [np.min(z_flux), np.max(z_flux)]
 
-nz1 = mpl.colors.Normalize(bz1[0], bz1[1] * 0.8)
+nz1 = mpl.colors.Normalize(bz1[0], bz1[1])
 nz2 = mpl.colors.Normalize(bz2[0], bz2[1])
 
 smz1 = ScalarMappable(norm=nz1, cmap=cmap)
 smz2 = ScalarMappable(norm=nz2, cmap=cmap)
 
 fig, ax = plt.subplots(subplot_kw = dict(projection="polar"))
+
+#for ti, ri, zi in zip(theta, r, z_fission)
+
 plot = ax.contourf(theta, r, z_fission, levels=1000)
 plt.colorbar(smz1, ax=ax)
 plt.savefig("zernike-kappa-fission.png", dpi=600)
