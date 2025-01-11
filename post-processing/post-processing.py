@@ -3,15 +3,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 from hex_rings import radius
 
+import matplotlib as mpl
+from matplotlib.cm import ScalarMappable
+
 # dimesnsions
 pin_pitch = 1.180 * 5.5685 / 10
 polygon_radius = pin_pitch * 10 * 3**(0.5)
 
 # statepoint
-sp = openmc.StatePoint('statepoint.10000.h5')
+sp = openmc.StatePoint('statepoint.100000.h5')
 
-zern_tally = sp.tallies[2]
-poly_tally = sp.tallies[3]
+zern_tally = sp.tallies[1]
+poly_tally = sp.tallies[2]
 
 zern_fission = zern_tally.get_slice(scores=['kappa-fission'])
 zern_flux = zern_tally.get_slice(scores=['flux'])
@@ -37,13 +40,25 @@ r, theta = np.meshgrid(zeniths, azimuths)
 z_fission = zern_fission_zs(zeniths, azimuths)
 z_flux = zern_flux_zs(zeniths, azimuths)
 
+cmap = mpl.colormaps['viridis']
+bz1 = [np.min(z_fission), np.max(z_fission)]
+bz2 = [np.min(z_flux), np.max(z_flux)]
+
+nz1 = mpl.colors.Normalize(bz1[0], bz1[1])
+nz2 = mpl.colors.Normalize(bz2[0], bz2[1])
+
+smz1 = ScalarMappable(norm=nz1, cmap=cmap)
+smz2 = ScalarMappable(norm=nz2, cmap=cmap)
+
 fig, ax = plt.subplots(subplot_kw = dict(projection="polar"))
-plot = ax.contourf(theta, r, z_fission)
+plot = ax.contourf(theta, r, z_fission, levels=1000)
+plt.colorbar(smz1, ax=ax)
 plt.savefig("zernike-kappa-fission.png", dpi=600)
 plt.close()
 
 fig, ax = plt.subplots(subplot_kw = dict(projection="polar"))
-plot = ax.contourf(theta, r, z_flux)
+plot = ax.contourf(theta, r, z_flux, levels=1000)
+plt.colorbar(smz2, ax=ax)
 plt.savefig("zernike-flux.png", dpi=600)
 plt.close()
 
@@ -72,11 +87,13 @@ k_fission = poly_fission_zs(zeniths, azimuths)
 k_flux = poly_flux_zs(zeniths, azimuths)
 
 fig, ax = plt.subplots(subplot_kw = dict(projection="polar"))
-plot = ax.contourf(theta, rp, k_fission)
+plot = ax.contourf(theta, rp, k_fission, levels=1000)
+plt.colorbar(smz1, ax=ax)
 plt.savefig("polygon-kappa-fission.png", dpi=600)
 plt.close()
 
 fig, ax = plt.subplots(subplot_kw = dict(projection="polar"))
-plot = ax.contourf(theta, rp, k_flux)
+plot = ax.contourf(theta, rp, k_flux, levels=1000)
+plt.colorbar(smz2, ax=ax)
 plt.savefig("polygon-flux.png", dpi=600)
 plt.close()

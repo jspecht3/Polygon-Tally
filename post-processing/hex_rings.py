@@ -56,7 +56,7 @@ def plotter():
             plt.scatter(cell[0], cell[1], color='b')
     plt.xlim(-10, 10)
     plt.ylim(-12, 12)
-    plt.savefig('hex-lattice-proof.png', dpi=600)
+#    plt.savefig('hex-lattice-proof.png', dpi=600)
     plt.show()
 
 
