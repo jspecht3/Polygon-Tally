@@ -70,7 +70,7 @@ def get_rel_err(df):
             glip += m_coeff
         rel_err.append(m_coeff)
 
-    return abs(np.array(rel_err))
+    return abs(np.array(err)) #abs(np.array(rel_err))
 
 
 zern_fission_err = get_rel_err(zern_fission_df)
@@ -78,15 +78,17 @@ zern_flux_err = get_rel_err(zern_flux_df)
 poly_fission_err = get_rel_err(poly_fission_df)
 poly_flux_err = get_rel_err(poly_flux_df)
 
-# plt.semilogy(zern_fission_err, label='zern, fission', marker='o')
-# plt.semilogy(zern_flux_err, label='zern, flux', marker='s')
-# plt.semilogy(poly_fission_err, label='poly, fission', marker='^')
-# plt.semilogy(poly_flux_err, label='poly, flux', marker='x')
+"""
+plt.semilogy(zern_fission_err, label='zern, fission')#, marker='o')
+plt.semilogy(zern_flux_err, label='zern, flux')#, marker='s')
+plt.semilogy(poly_fission_err, label='poly, fission')#, marker='^')
+plt.semilogy(poly_flux_err, label='poly, flux')#, marker='x')
 
-# plt.legend()
-# plt.grid('both')
-# plt.savefig("./err-next-term.png", dpi=600)
-# plt.show()
+plt.legend()
+plt.grid('both')
+plt.savefig("./err-next-term.png", dpi=600)
+plt.show()
+"""
 
 # functions for zern tally
 def zern_fission_xy(x, y):

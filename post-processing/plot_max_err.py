@@ -8,6 +8,8 @@ from max_error import (zern_flux_xy, zern_fission_xy, poly_flux_xy,
     poly_fission_xy)
 from calc_max_err import calc_weights
 from parse_csv import flux_vals, fission_vals
+from functions import (zern_flux_err, zern_fission_err, poly_flux_err,
+    poly_fission_err)
 
 # dimensions
 radius = pitch / 2 / np.cos(np.radians(30))
@@ -79,18 +81,28 @@ def max_error(func, dx):
     if tally_type == "poly" and qoi == "flux":
         ls = "dashdot"
 
-    plt.semilogy(maxes, label=f"{glip}, {glub}", ls=ls, color='b')
+    ax1.semilogy(maxes, label=f"{glub}, {glip}")#, ls=ls, color='r')
 
+fig, ax1 = plt.subplots()
+#ax2 = plt.twinx(ax1)
 
 def plot_all_maxes(dx):
 
-    max_error(zern_flux_xy, dx)
     max_error(zern_fission_xy, dx)
-    max_error(poly_flux_xy, dx)
     max_error(poly_fission_xy, dx)
-
-    plt.legend(loc='upper right')
-    plt.ylim(1e-5, 3e-1)
+    max_error(zern_flux_xy, dx)
+    max_error(poly_flux_xy, dx)
+    """
+    ax2.semilogy(zern_flux_err, label = "RE: Zern Fl", marker='o', color='b')
+    ax2.semilogy(zern_fission_err, label = "RE: Zern KF", marker='s', color='b')
+    ax2.semilogy(poly_flux_err, label = "RE: Poly, FL", marker='^', color='b')
+    ax2.semilogy(poly_fission_err, label = "RE: Poly, KF", marker='x', color='b')
+    """
+    ax1.legend(loc='upper right')
+    #ax2.legend(loc='upper left')
+    plt.ylim(5e-5, 1e-1)
+    plt.ylabel("Maximum Error")
+    plt.xlabel("FET Radial Order")
 
     plt.grid('both')
     plt.savefig("./plots/max-err.png", dpi=600)
