@@ -1,4 +1,5 @@
 from polygon_tally import *
+import os
 
 path = "output/different-polygons/"
 
