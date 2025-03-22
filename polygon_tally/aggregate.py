@@ -4,6 +4,8 @@ from .zernike_like import (base_input, ZernikeParent,
                           ana_cks, num_cks)
 import csv
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+from matplotlib.cm import ScalarMappable
 import numpy as np
 import numpy.linalg as la
 import time
@@ -43,12 +45,17 @@ class ApproxParent():
         name : str
             file name of the picture you want to save
         """
+        cmap = mpl.colormaps['viridis']
+        norm = mpl.colors.Normalize(bounds[0], bounds[1])
+        sm = ScalarMappable(norm=norm, cmap=cmap)
+        sm.set_array([])
+
         fig, ax = plt.subplots()
-        plot = ax.contourf(self.x, self.y, z)
-        cbar = fig.colorbar(plot)
+        plot = ax.contourf(self.x, self.y, z, cmap=cmap, levels=1000)
+        cbar = fig.colorbar(sm, ax=ax)
         
-        if bounds != []:
-            plot.set_clim(bounds)
+#        if bounds != []:
+#            plot.set_clim(bounds)
        
         graph_lim = 1.1 * self.polygon_radius
         ax.set_xlim(-graph_lim, graph_lim)
@@ -58,7 +65,7 @@ class ApproxParent():
         if name != '' :
             plt.savefig(name, dpi = 600)
         #plt.close('all')
-        plt.show()
+        plt.close()
 
 class ZApprox(ApproxParent):
 

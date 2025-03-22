@@ -53,7 +53,6 @@ tru_wg.add_nuclide("Pu239", 93.81)
 tru_wg.add_nuclide("Pu240", 5.81)
 tru_wg.add_nuclide("Pu241", 0.35)
 tru_wg.add_nuclide("Pu242", 0.02)
-
 tru_wg.set_density("g/cc", 19.84)
 
 ## boron
@@ -211,7 +210,7 @@ source = openmc.stats.Box(
         (source_scope,-source_scope,-source_scope), 
         (source_scope,source_scope,source_scope))
 src = openmc.IndependentSource(space = source)
-settings.soruce = [src]
+settings.source = [src]
 
 settings.particles = 10000
 settings.batches = 10000
